@@ -1,0 +1,30 @@
+\frametitle{Daily Workflow After the First Clone}
+\framesubtitle{Do not clone the repository again every day}
+
+\footnotesize
+
+\begin{block}{Start a New Working Session}
+\begin{verbatim}
+cd ~/quard_um6p_intership
+git status
+git branch
+git pull origin main
+\end{verbatim}
+\end{block}
+
+\begin{exampleblock}{After Making a Focused Change}
+\begin{verbatim}
+git status
+git diff
+git add path/to/intended_file
+git diff --staged
+git commit -m "type: explain the change"
+git push
+\end{verbatim}
+\end{exampleblock}
+
+\begin{alertblock}{Mental Model}
+Clone once. Pull to receive new work. Commit to preserve local progress.
+Push to publish the commits to the configured remote branch.
+\end{alertblock}
+

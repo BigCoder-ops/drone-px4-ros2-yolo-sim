@@ -1,0 +1,374 @@
+\documentclass[11pt,a4paper]{article}
+
+% ============================================================
+% Encoding, typography, and page geometry
+% ============================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,top=2.45cm,bottom=2.35cm,left=2.35cm,right=2.35cm,headheight=34pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.08}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.65em}
+
+% ============================================================
+% Core packages
+% ============================================================
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{verbatim}
+
+% ============================================================
+% UM6P-inspired color system
+% ============================================================
+\definecolor{UM6POrange}{HTML}{D95F32}
+\definecolor{UM6PDarkOrange}{HTML}{A83E1F}
+\definecolor{UM6PBlue}{HTML}{264653}
+\definecolor{UM6PGreen}{HTML}{2A9D8F}
+\definecolor{UM6PCream}{HTML}{F4F0E8}
+\definecolor{UM6PLight}{HTML}{FAF8F4}
+\definecolor{UM6PGray}{HTML}{66717A}
+\definecolor{UM6PInk}{HTML}{202A31}
+
+% ============================================================
+% PDF metadata and hyperlinks
+% ============================================================
+\hypersetup{
+  colorlinks=true,
+  linkcolor=UM6PDarkOrange,
+  urlcolor=UM6PBlue,
+  citecolor=UM6PGreen,
+  pdftitle={Quadcopter Autonomous Inspection Internship},
+  pdfauthor={Abdellah TNOURJI},
+  pdfsubject={PX4, ROS 2, Gazebo and YOLOv8 internship onboarding guide},
+  pdfkeywords={Quadcopter, PX4, ROS 2, Gazebo, YOLOv8, autonomous inspection}
+}
+
+% ============================================================
+% Heading and list design
+% ============================================================
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{0pt}{2.0em}{0.8em}{\Large\bfseries\color{UM6PBlue}}}
+\renewcommand\subsection{\@startsection{subsection}{2}{0pt}{1.4em}{0.45em}{\large\bfseries\color{UM6PDarkOrange}}}
+\makeatother
+\renewcommand{\labelitemi}{\textcolor{UM6POrange}{\small$\blacksquare$}}
+\renewcommand{\labelitemii}{\textcolor{UM6PGreen}{\small$\blacktriangleright$}}
+
+% ============================================================
+% Header and footer
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[width=1.35cm,height=0.72cm,keepaspectratio]{logo/um6p-white-short.png}}
+\fancyhead[C]{\small\sffamily\color{UM6PBlue}\textbf{Quadcopter Autonomous Inspection Internship}}
+\fancyhead[R]{\small\sffamily\color{UM6PGray}SASE | Vanguard Center}
+\fancyfoot[L]{\scriptsize\sffamily\color{UM6PGray}School of Applied Sciences \& Engineering}
+\fancyfoot[R]{\scriptsize\sffamily\color{UM6PGray}Page \thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.3pt}
+
+% ============================================================
+% Reusable components
+% ============================================================
+\newenvironment{keybox}{%
+  \begin{center}\begin{minipage}{0.94\textwidth}%
+  \color{UM6PInk}\hrule\vspace{0.55em}%
+}{%
+  \vspace{0.55em}\hrule\end{minipage}\end{center}%
+}
+
+\newenvironment{learningbox}{%
+  \begin{center}\begin{minipage}{0.94\textwidth}%
+  \color{UM6PBlue}\hrule\vspace{0.55em}%
+}{%
+  \vspace{0.55em}\hrule\end{minipage}\end{center}%
+}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+\begin{document}
+
+% ============================================================
+% Orange title page
+% ============================================================
+\begin{titlepage}
+\thispagestyle{empty}
+\pagecolor{UM6POrange}
+\color{white}
+
+% Large institutional identity at the top. Width and height are both
+% constrained with keepaspectratio to avoid stretching the supplied image.
+\begin{center}
+\vspace*{0.35cm}
+\includegraphics[width=0.78\textwidth,height=3.0cm,keepaspectratio]{logo/um6p-white.png}
+\end{center}
+
+\vspace{1.35cm}
+\begin{center}
+{\sffamily\bfseries\fontsize{30}{35}\selectfont
+Quadcopter Autonomous\\[0.15cm]
+Inspection Internship\par}
+
+\vspace{0.55cm}
+{\color{white}\rule{0.72\textwidth}{1.2pt}}\par
+\vspace{0.55cm}
+
+{\Large\sffamily
+From flight simulation to AI-assisted inspection\par}
+
+\vspace{1.0cm}
+\begin{minipage}{0.84\textwidth}
+\centering\large
+A two-week engineering experience integrating \textbf{PX4 Autopilot},
+\textbf{ROS 2 Humble}, \textbf{Gazebo}, trajectory generation,
+onboard sensing, and \textbf{YOLOv8} perception.
+\end{minipage}
+\end{center}
+
+\vfill
+
+% Organizer block is deliberately separated from the title and logos.
+\begin{center}
+\setlength{\fboxsep}{11pt}
+\colorbox{white}{%
+  \begin{minipage}{0.82\textwidth}
+  \color{UM6PInk}\centering\sffamily
+  {\small\bfseries ORGANIZED BY}\par
+  \vspace{0.25cm}
+  {\Large\bfseries School of Applied Sciences \& Engineering}\par
+  \vspace{0.12cm}
+  {\normalsize Vanguard Center | Mohammed VI Polytechnic University}\par
+  \vspace{0.35cm}
+  \begin{tabular}{rl}
+    \textbf{Track:} & Autonomous Drone Engineering \\
+    \textbf{Format:} & Full-time, team-oriented, learning by doing \\
+  \end{tabular}
+  \end{minipage}%
+}
+\end{center}
+
+\vspace{0.65cm}
+
+% The compact mark is enlarged and constrained. The Vanguard supplied file is
+% kept in the project at the exact requested path. Its canvas is fully white,
+% so the organizer name is typeset above to remain visible on all PDF viewers.
+\begin{center}
+\includegraphics[width=0.32\textwidth,height=1.2cm,keepaspectratio]{logo/um6p-white-short.png}
+\hspace{1.2cm}
+\raisebox{0.15cm}{\sffamily\bfseries\Large VANGUARD CENTER}
+\end{center}
+
+\vspace{0.2cm}
+\begin{center}
+{\small\sffamily Academic Year 2026--2027}
+\end{center}
+\end{titlepage}
+\nopagecolor
+\color{UM6PInk}
+
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+\begin{keybox}
+\textbf{Welcome to the internship.}
+This document presents the mission, engineering architecture, learning objectives,
+working method, and first onboarding steps. The repository \texttt{README.md} inside \texttt{quard$\_$um6p$\_$intership} project directory
+remains the authoritative operational starting point.
+\end{keybox}
+
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+
+\section{Project Overview}
+
+The \textbf{Quadcopter Autonomous Inspection Internship} introduces the complete chain of a modern autonomous aerial system. The project combines a simulated quadcopter, the PX4 flight stack, ROS 2 communication, Gazebo-based experimentation, onboard camera data, and YOLOv8 object detection to perform a structured inspection mission.
+
+The mission is easy to state but technically rich: the quadcopter takes off, follows a planned trajectory, acquires images, identifies selected objects, associates detections with flight information, and produces evidence that the mission was performed correctly.
+
+\section{Technical Architecture}
+
+\begin{tabularx}{\textwidth}{>{\bfseries\color{UM6PBlue}}p{3.3cm}Y}
+\toprule
+Component & Role in the project \\
+\midrule
+Gazebo & Simulates the world, vehicle, sensors, camera, gravity, motion, and inspection targets in a safe and repeatable laboratory. \\
+PX4 Autopilot & Provides state estimation, flight modes, position and attitude control, safety behavior, and actuator-level control. \\
+ROS 2 Humble & Connects modular nodes through topics, services, parameters, Quality of Service policies, and recorded data. \\
+Micro XRCE-DDS & Bridges PX4 uORB information and ROS 2 topics so external nodes can observe the vehicle and publish mission references. \\
+Orbit inspection node & Generates warmup, climb, approach, circular inspection, hold, and landing phases. \\
+YOLOv8 perception & Processes camera images, identifies selected classes, annotates images, and produces measurable detection evidence. \\
+\bottomrule
+\end{tabularx}
+
+\begin{center}
+\fcolorbox{UM6POrange}{UM6PLight}{%
+\parbox{0.92\textwidth}{\centering\bfseries
+Mission $\rightarrow$ Requirements $\rightarrow$ Architecture $\rightarrow$ Design $\rightarrow$ Simulation\\[0.3em]
+Programming $\rightarrow$ Integration $\rightarrow$ Testing $\rightarrow$ Evidence $\rightarrow$ Demonstration}}
+\end{center}
+
+\section{Goals and Objectives}
+
+\subsection{Technical objectives}
+
+By the end of the internship, students should be able to:
+
+\begin{itemize}
+  \item explain the architecture of an autonomous quadcopter system;
+  \item distinguish the responsibilities of Gazebo, PX4, ROS 2, and YOLOv8;
+  \item use Ubuntu terminals to inspect, launch, monitor, and stop robotics processes;
+  \item understand ROS 2 nodes, topics, services, parameters, launch files, and QoS;
+  \item interpret PX4 local North-East-Down coordinates;
+  \item understand how position and yaw references form a trajectory;
+  \item run and modify a reproducible Gazebo inspection mission;
+  \item bridge simulated camera images into ROS 2;
+  \item interpret YOLOv8 classes, confidence values, bounding boxes, missed detections, and false detections;
+  \item collect evidence using rosbags, logs, plots, and reports;
+  \item compare desired and measured behavior with meaningful metrics;
+  \item combine individual contributions into one coherent team demonstration.
+\end{itemize}
+
+\subsection{Educational objectives}
+
+\begin{itemize}
+  \item decompose an open problem into testable subsystems;
+  \item make assumptions explicit and verify them experimentally;
+  \item change one factor at a time when diagnosing behavior;
+  \item treat failure as information when it is observed and understood;
+  \item separate configuration, mathematics, control logic, monitoring, and evidence;
+  \item write readable code and reproducible procedures;
+  \item communicate technical choices and limitations honestly;
+  \item collaborate through clear interfaces and individual accountability.
+\end{itemize}
+
+\section{Engineering and Physics Foundations}
+
+\subsection{Coordinate frames}
+
+PX4 local position uses North-East-Down:
+
+\[
+\mathbf{p}_{\mathrm{NED}}=
+\begin{bmatrix}N&E&D\end{bmatrix}^{\mathsf T}.
+\]
+
+Positive vertical position points downward, so altitude $h$ above the local origin is commanded as $D=-h$. Visualization commonly uses East-North-Up:
+
+\[
+(x_{\mathrm{ENU}},y_{\mathrm{ENU}},z_{\mathrm{ENU}})=(E,N,-D).
+\]
+
+A numerically correct value in the wrong frame remains an incorrect engineering command.
+
+\subsection{Circular inspection trajectory}
+
+A horizontal orbit of radius $R$, centered at $(N_c,E_c)$, is
+
+\[
+N(t)=N_c+R\cos\theta(t),\qquad
+E(t)=E_c+R\sin\theta(t),\qquad
+D(t)=-h,
+\]
+
+with
+
+\[
+\theta(t)=\frac{2\pi t}{T}.
+\]
+
+The tangential speed and centripetal acceleration are
+
+\[
+v=\frac{2\pi R}{T},
+\qquad
+a_c=\frac{v^2}{R}=\frac{4\pi^2R}{T^2}.
+\]
+
+Halving the orbit period doubles the requested speed and multiplies the required centripetal acceleration by four.
+
+\subsection{Smooth reference shaping}
+
+The project uses
+
+\[
+s(u)=3u^2-2u^3,\qquad 0\le u\le1,
+\]
+
+because
+
+\[
+s(0)=0,\quad s(1)=1,\quad s'(0)=0,\quad s'(1)=0.
+\]
+
+The reference starts and ends with zero slope. PX4 remains responsible for feedback control.
+
+\section{Two-Week Learning Path}
+
+
+ TO DO ... 
+ 
+ 
+\begin{keybox}
+\begin{center}
+\large\bfseries\color{UM6PDarkOrange}
+Learn $>$ Build $>$ Test $>$ Fail $>$ Understand $>$ Improve $>$ Demonstrate
+\end{center}
+\end{keybox}
+
+\section{Teamwork and Individual Contribution}
+
+Students work in one shared system while remaining accountable for an identifiable contribution. Contributions may cover mission requirements, trajectory analysis, ROS 2 integration, simulation design, perception, testing, data recording, or final demonstration coordination.
+
+Each student maintains an engineering logbook that records the daily objective, learning, changes, tests, evidence, failures, decisions, next action, and contribution to integration.
+
+\section{Testing, Evidence, and Safety}
+
+For each experiment, students follow:
+
+\begin{center}
+\textbf{Claim $\rightarrow$ Setup $\rightarrow$ Controlled variable $\rightarrow$ Measurement $\rightarrow$ Result $\rightarrow$ Interpretation $\rightarrow$ Next test}
+\end{center}
+
+The default environment is simulation. Physical flight requires separate authorization, an approved area, a responsible operator, successful prior validation, and a recovery method. Manual keyboard control and autonomous offboard control must never command the vehicle simultaneously.
+
+\section{Getting Started}
+
+The project repository is:
+
+\begin{center}
+\url{https://github.com/abdtnourji/quard_um6p_intership}
+\end{center}
+
+\begin{keybox}
+\textbf{Mandatory first action.} Open the repository and read the top-level \texttt{README.md} completely. Then follow the phase-by-phase setup guides in order. Do not skip directly to the final pipeline.
+\end{keybox}
+
+\section{ Final Submission}
+
+TODO
+
+
+
+\section{Closing Perspective}
+
+This internship connects flight physics, control, sensing, simulation, middleware, computer vision, programming, experimentation, and technical communication through one visible mission. Students are not expected to know everything initially. Students are expected to ask precise questions, use the repository methodically, test assumptions, document evidence, and improve through repeated engineering cycles.
+
+\vfill
+\begin{center}
+{\color{UM6POrange}\rule{0.62\textwidth}{0.8pt}}\\[0.55em]
+{\large\bfseries\color{UM6PBlue}
+Understand the system. Build carefully. Test with evidence.}
+\end{center}
+
+\end{document}

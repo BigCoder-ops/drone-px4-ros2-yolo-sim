@@ -1,0 +1,1477 @@
+\section{Python Refresher for Robotics}
+
+
+\begin{frame}{Introduction}
+\framesubtitle{A robotics program transforms inputs into useful outputs}
+
+\begin{center}
+\textbf{Sensors and configuration}
+\(\rightarrow\)
+\textbf{Python logic}
+\(\rightarrow\)
+\textbf{telemetry, commands, logs, and detections}
+\end{center}
+
+\vspace{0.5cm}
+\begin{center}
+\includegraphics[width=0.4\textwidth]{images/Python-for-robotics.jpg}
+\end{center}
+
+
+\end{frame}
+
+\subsection{Core Language Foundations}
+
+\begin{frame}[fragile]{Variables and Data Types}
+\framesubtitle{Names that refer to values used by the robot}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.45\textwidth}
+\begin{block}{Common Types}
+\begin{itemize}
+\item \texttt{int}: number of detections
+\item \texttt{float}: altitude in metres
+\item \texttt{bool}: mission enabled or disabled
+\item \texttt{str}: frame or object name
+\item \texttt{None}: value not available yet
+\end{itemize}
+\end{block}
+\end{column}
+\hfill
+\begin{column}{0.51\textwidth}
+\begin{verbatim}
+altitude_m = 4.0
+detection_count = 3
+mission_active = True
+target_label = "inspection_car"
+latest_position = None
+\end{verbatim}
+\end{column}
+\end{columns}
+\begin{exampleblock}{Robotics Habit}
+Include units in names such as \texttt{altitude\_m}, \texttt{time\_s}, and \texttt{rate\_hz}. Python is dynamically typed, but engineering meaning must remain explicit.
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Lists, Tuples, and Dictionaries}
+\framesubtitle{Choose a container according to the meaning of the data}
+\small
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+\begin{block}{Intuitive Roles}
+\begin{itemize}
+\item \textbf{List}: ordered collection that may change
+\item \textbf{Tuple}: fixed ordered record
+\item \textbf{Dictionary}: named key-value lookup
+\end{itemize}
+\end{block}
+\end{column}
+\hfill
+\begin{column}{0.48\textwidth}
+\begin{verbatim}
+ranges_m = [2.4, 2.1, 1.9]
+position_ned = (3.0, -1.0, -4.0)
+state = {
+    "mode": "ORBIT",
+    "battery_pct": 78.0
+}
+\end{verbatim}
+\end{column}
+\end{columns}
+\begin{exampleblock}{Selection Rule}
+Use a tuple for one position, a list for a history of measurements, and a dictionary when names such as \texttt{mode} or \texttt{battery\_pct} make the record clearer.
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Indexing, Slicing, and Unpacking}
+\framesubtitle{Access exactly the data needed by the algorithm}
+\begin{verbatim}
+position_ned = (3.0, -1.0, -4.0)
+north, east, down = position_ned
+
+recent_ranges = [2.8, 2.5, 2.2, 2.0]
+latest = recent_ranges[-1]
+last_three = recent_ranges[-3:]
+\end{verbatim}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+\begin{block}{Index}
+Select one element. Python starts counting at zero; index \texttt{-1} means the last element.
+\end{block}
+\end{column}
+\hfill
+\begin{column}{0.47\textwidth}
+\begin{block}{Unpacking}
+Give meaningful names to the components of a structured value.
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Mutability and Copies}
+\framesubtitle{Two names may refer to the same changing object}
+\begin{verbatim}
+measurements = [1.0, 2.0]
+alias = measurements
+alias.append(3.0)
+# measurements is now [1.0, 2.0, 3.0]
+
+independent_copy = measurements.copy()
+\end{verbatim}
+\begin{alertblock}{Intuition}
+Unexpected shared changes can corrupt a measurement history, configuration, or message buffer. Use \texttt{copy()} when an independent list is required.
+\end{alertblock}
+% \begin{exampleblock}{Key Distinction}
+% \texttt{==} compares values. \texttt{is} checks whether two names refer to the same object. Use \texttt{is None} when testing for missing data.
+% \end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Conditions}
+\framesubtitle{Choose behavior from validated information}
+\begin{verbatim}
+if latest_position is None:
+    status = "waiting_for_odometry"
+elif altitude_m > max_altitude_m:
+    status = "limit_exceeded"
+else:
+    status = "ready"
+\end{verbatim}
+\begin{block}{Robotics Interpretation}
+Conditions implement decisions such as waiting for sensor data, rejecting invalid parameters, changing mission phase, or suppressing an unsafe output.
+\end{block}
+\begin{alertblock}{Boundary}
+An \texttt{if} statement is program logic, not proof of flight safety. Safety requires validated requirements, system-level safeguards, testing, and operational procedures.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{For Loops}
+\framesubtitle{Apply the same operation to a known collection}
+\begin{verbatim}
+detections = ["car", "person", "car"]
+car_count = 0
+
+for label in detections:
+    if label == "car":
+        car_count += 1
+\end{verbatim}
+\begin{exampleblock}{Robotics Uses}
+Process every detection, inspect each sensor sample, publish a sequence of waypoints, or declare a set of ROS~2 parameters.
+\end{exampleblock}
+\begin{block}{Readable Iteration}
+Iterate directly over values. Use \texttt{enumerate(...)} only when an index is genuinely needed.
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{While Loops and Repeated Callbacks}
+\framesubtitle{Repeat until a condition changes, but always define an exit}
+
+\begin{verbatim}
+attempt = 0
+while attempt < 3:
+    attempt += 1
+    print(f"Connection attempt {attempt}")
+\end{verbatim}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+\begin{block}{Use \texttt{while} When}
+The number of repetitions depends on a changing condition.
+\end{block}
+\end{column}
+\hfill
+\begin{column}{0.47\textwidth}
+\begin{block}{In ROS~2}
+Timers and callbacks usually provide repetition. Avoid blocking loops inside callbacks.
+\end{block}
+\end{column}
+\end{columns}
+\begin{alertblock}{Failure Mode}
+An unlimited loop can freeze a node or block message processing. Define a stop condition, timeout, or cancellation path.
+\end{alertblock}
+\end{frame}
+
+\subsection{Functions and Program Structure}
+
+\begin{frame}[fragile]{Functions}
+\framesubtitle{Give one reusable operation a clear name}
+\begin{verbatim}
+import math
+
+def planar_distance_m(x1, y1, x2, y2):
+    """Return 2D Euclidean distance in metres."""
+    dx = x2 - x1
+    dy = y2 - y1
+    return math.hypot(dx, dy)
+
+distance_m = planar_distance_m(0.0, 0.0, 3.0, 4.0)
+\end{verbatim}
+\begin{exampleblock}{Why Functions Matter}
+A function isolates one responsibility: calculate distance, validate parameters, convert coordinates, filter detections, or build a message.
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Parameters, Returns, and Type Hints}
+\framesubtitle{Make the function contract visible}
+\begin{verbatim}
+def clamp(value: float,
+          minimum: float,
+          maximum: float) -> float:
+    return max(minimum, min(value, maximum))
+\end{verbatim}
+\begin{block}{Function Contract}
+Inputs are parameters. The returned value is the output. Type hints improve readability and tool support, but Python does not automatically enforce them at runtime.
+\end{block}
+\begin{exampleblock}{Project Connection}
+A control helper may accept the desired and measured altitude, then return a limited correction. Keep calculation separate from message publication when possible.
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Modules and Imports}
+\framesubtitle{Separate the project into focused, reusable files}
+\begin{verbatim}
+# trajectory.py
+def tracking_error(desired, measured):
+    ...
+
+# orbit_controller.py
+from .trajectory import tracking_error
+\end{verbatim}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+\begin{block}{Module}
+A Python file containing related functions, classes, and constants.
+\end{block}
+\end{column}
+\hfill
+\begin{column}{0.47\textwidth}
+\begin{block}{Package}
+A directory that organizes related modules under one importable namespace.
+\end{block}
+\end{column}
+\end{columns}
+\begin{exampleblock}{Design Rule}
+Keep trajectory mathematics, ROS~2 node logic, configuration handling, and tests in separate modules with clear responsibilities.
+\end{exampleblock}
+\end{frame}
+
+% \begin{frame}[fragile]{Script Entry Point}
+% \framesubtitle{Run code intentionally, not accidentally during import}
+% \begin{verbatim}
+% def main():
+%     print("Starting telemetry processor")
+
+% if __name__ == "__main__":
+%     main()
+% \end{verbatim}
+% \begin{block}{Why It Matters}
+% Top-level code executes when a module is imported. The entry-point guard allows functions and classes to be imported by tests or other modules without launching the whole program.
+% \end{block}
+% \begin{exampleblock}{ROS~2 Connection}
+% A package console script calls a \texttt{main()} function that initializes ROS~2, creates a node object, spins it, and performs orderly shutdown.
+% \end{exampleblock}
+% \end{frame}
+
+\subsection{Object-Oriented Python for Robotics}
+
+\begin{frame}{Why Object-Oriented Programming?}
+\framesubtitle{Keep related state and behavior together}
+\begin{center}
+\textbf{Procedural view:} data + separate functions\\[0.4em]
+\textbf{Object-oriented view:} state + behavior inside one object
+\end{center}
+% \pause
+% \begin{exampleblock}{Robot Analogy}
+% A drone-state object stores position, velocity, and mode. Its methods can update the estimate, validate values, or produce a readable summary.
+% \end{exampleblock}
+% \begin{block}{Why ROS~2 Uses This Pattern}
+% A Python ROS~2 node is commonly represented by a class. The object owns publishers, subscriptions, timers, parameters, callbacks, and logger access.
+% \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Class, Object, Attributes, and Methods}
+\framesubtitle{The blueprint and the individual instance}
+
+\footnotesize
+\begin{verbatim}
+class DroneState:
+    def __init__(self, north_m, east_m, down_m):
+        self.north_m = north_m
+        self.east_m = east_m
+        self.down_m = down_m
+
+    def altitude_m(self):
+        return -self.down_m
+
+state = DroneState(2.0, -1.0, -4.0)
+print(state.altitude_m())
+\end{verbatim}
+\begin{block}{Vocabulary}
+\textbf{Class}: blueprint. \textbf{Object}: one instance. \textbf{Attributes}: stored state. \textbf{Methods}: operations performed by the object.
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Constructor and \texttt{self}}
+\framesubtitle{Initialize every object in a valid and understandable state}
+\begin{verbatim}
+class Detection:
+    def __init__(self, label, confidence, center_px):
+        self.label = label
+        self.confidence = confidence
+        self.center_px = center_px
+\end{verbatim}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+\begin{block}{\texttt{\_\_init\_\_}}
+Runs during object construction and stores the initial state.
+\end{block}
+\end{column}
+\hfill
+\begin{column}{0.47\textwidth}
+\begin{block}{\texttt{self}}
+Refers to the specific object whose method is currently running.
+\end{block}
+\end{column}
+\end{columns}
+\begin{exampleblock}{Engineering Habit}
+Validate constructor inputs when an invalid object would make later behavior ambiguous or unsafe.
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Encapsulation and Clear Responsibilities}
+\framesubtitle{Expose useful behavior and keep implementation details local}
+\begin{verbatim}
+class AltitudeMonitor:
+    def __init__(self, limit_m):
+        self._limit_m = float(limit_m)
+
+    def within_limit(self, altitude_m):
+        return 0.0 <= altitude_m <= self._limit_m
+\end{verbatim}
+\begin{block}{Python Convention}
+A leading underscore such as \texttt{\_limit\_m} means ``internal implementation detail.'' It is a convention, not a security boundary.
+\end{block}
+\begin{exampleblock}{Project Connection}
+A class should have one coherent responsibility: mission state, telemetry filtering, detection processing, or ROS~2 communication.
+\end{exampleblock}
+\end{frame}
+
+
+
+% TO DO: add class inheritance definitions !!
+
+
+
+
+
+
+\begin{frame}[fragile]{Inheritance in ROS~2 Nodes}
+\framesubtitle{Extend an existing class instead of rebuilding its capabilities}
+
+\footnotesize
+\begin{verbatim}
+from rclpy.node import Node
+
+class OrbitController(Node):
+    def __init__(self):
+        super().__init__("orbit_controller")
+        self.timer = self.create_timer(0.05, self.tick)
+
+    def tick(self):
+        self.get_logger().info("Controller active")
+\end{verbatim}
+\begin{block}{Meaning}
+\texttt{OrbitController} is a specialized \texttt{Node}. Through inheritance it receives ROS~2 node capabilities, while adding project-specific behavior.
+\end{block}
+\begin{alertblock}{Design Restraint}
+Prefer composition for unrelated capabilities. Use inheritance when the ``is a'' relationship is clear and supported by the framework.
+\end{alertblock}
+\end{frame}
+
+
+
+
+
+
+% \begin{frame}[fragile]{State Machines as Objects}
+% \framesubtitle{Make mission phases explicit and mutually understandable}
+% \begin{verbatim}
+% from enum import Enum, auto
+
+% class State(Enum):
+%     WAITING = auto()
+%     CLIMB = auto()
+%     ORBIT = auto()
+%     LANDING = auto()
+
+% current_state = State.WAITING
+% \end{verbatim}
+% \begin{exampleblock}{Why This Is Better Than Magic Numbers}
+% \texttt{State.ORBIT} communicates intent. A mission controller can store one current state and execute only the behavior associated with that phase.
+% \end{exampleblock}
+% \begin{block}{Internship Connection}
+% The provided orbit controller uses a class, an enumeration, parameters, publishers, subscriptions, services, a timer, and mission-state transitions.
+% \end{block}
+% \end{frame}
+
+\subsection{Errors, Files, and Configuration}
+
+\begin{frame}{Syntax Errors and Exceptions}
+\framesubtitle{Different failures occur at different moments}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+\begin{block}{Syntax Error}
+Python cannot parse the program. Typical causes include missing colons, parentheses, or incorrect indentation.
+\end{block}
+\end{column}
+\hfill
+\begin{column}{0.47\textwidth}
+\begin{block}{Exception}
+The program starts, but a runtime operation fails, such as opening a missing file or converting invalid text to a number.
+\end{block}
+\end{column}
+\end{columns}
+\begin{exampleblock}{Debugging Order}
+Read the final exception type and message, then inspect the traceback from the point where your code first appears.
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Handling Expected Exceptions}
+\framesubtitle{Recover only when the program has a meaningful response}
+\begin{verbatim}
+try:
+    altitude_m = float(raw_altitude)
+except ValueError as exc:
+    logger.error("Invalid altitude: %s", exc)
+    altitude_m = None
+\end{verbatim}
+\begin{block}{Good Practice}
+Catch specific exceptions, preserve useful evidence, and choose a clear fallback such as rejecting configuration, skipping one record, or entering a passive state.
+\end{block}
+\begin{alertblock}{Avoid}
+Do not use a silent broad \texttt{except:}. It can hide programming defects and leave a robotics process running with an unknown state.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Raising Exceptions During Validation}
+\framesubtitle{Reject invalid assumptions close to their source}
+\begin{verbatim}
+def validate_altitude(altitude_m, max_altitude_m):
+    if not 0.5 <= altitude_m <= max_altitude_m:
+        raise ValueError("altitude_m outside limits")
+\end{verbatim}
+\begin{exampleblock}{Project Connection}
+Mission parameters should be checked before commands are published. A clear \texttt{ValueError} is easier to diagnose than incorrect motion caused by an invalid value.
+\end{exampleblock}
+\begin{block}{Principle}
+Exceptions report exceptional conditions. Normal mission choices should remain explicit conditions and state transitions.
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Reading Configuration Files}
+\framesubtitle{Separate adjustable settings from program logic}
+\begin{verbatim}
+import json
+from pathlib import Path
+
+config_path = Path("config/mission.json")
+with config_path.open("r", encoding="utf-8") as file:
+    config = json.load(file)
+
+radius_m = float(config["radius_m"])
+\end{verbatim}
+\begin{block}{Why \texttt{with} Matters}
+The context manager closes the file correctly, including when an exception occurs.
+\end{block}
+\begin{exampleblock}{Robotics Use}
+Store target names, thresholds, paths, or non-ROS utility settings outside the source code. Validate every value after loading it.
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Writing Telemetry or Test Evidence}
+\framesubtitle{Persist results in a format that can be inspected later}
+\begin{verbatim}
+import csv
+
+with open("telemetry.csv", "w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerow(["time_s", "altitude_m"])
+    writer.writerow([0.0, 1.2])
+\end{verbatim}
+\begin{exampleblock}{Use Cases}
+Record test measurements, tracking error, detection confidence, or mission-state transitions for later analysis.
+\end{exampleblock}
+\begin{alertblock}{System Design Note}
+High-rate robotics logging needs deliberate buffering and storage design. This simple example teaches the file-handling pattern, not a production telemetry architecture.
+\end{alertblock}
+\end{frame}
+
+\subsection{Python Environments and Dependencies}
+
+\begin{frame}{Virtual Environments}
+\framesubtitle{One isolated Python toolbox for one project}
+\begin{center}
+\textbf{System Python} \(\neq\) \textbf{project virtual environment}
+\end{center}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+\begin{block}{Why}
+Different projects may require different package versions. Isolation reduces conflicts and protects the operating-system Python environment.
+\end{block}
+\end{column}
+\hfill
+\begin{column}{0.47\textwidth}
+\begin{block}{Mental Model}
+The environment is a project-specific toolbox containing a Python interpreter context and installed packages.
+\end{block}
+\end{column}
+\end{columns}
+\begin{exampleblock}{Reproducibility}
+The environment directory is normally recreated from documented commands and dependency files, not copied between computers or committed to Git.
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Create and Use a Virtual Environment}
+\framesubtitle{A repeatable Ubuntu workflow}
+\begin{verbatim}
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python --version
+python -m pip --version
+
+deactivate
+\end{verbatim}
+\begin{block}{How to Verify}
+After activation, \texttt{python} and \texttt{python -m pip} should refer to the environment. Verify rather than assuming from the prompt alone.
+\end{block}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Document Dependencies in a File}
+\begin{alertblock}{ROS~2 Compatibility}
+Some ROS~2 Python packages depend on the system Python environment. Follow the internship's documented setup rather than creating arbitrary environments for every node.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Install Packages with \texttt{pip}}
+\framesubtitle{Install into the interpreter you intentionally selected}
+
+\footnotesize
+\begin{verbatim}
+python -m pip install numpy
+python -m pip install -r requirements.txt
+python -m pip list
+\end{verbatim}
+\begin{block}{Why \texttt{python -m pip}?}
+It runs \texttt{pip} through the selected Python interpreter, reducing ambiguity when several Python installations exist.
+\end{block}
+\begin{exampleblock}{Project Practice}
+Document required versions in the repository. A dependency file supports repeatable installation on the second computer and by the internship students.
+\end{exampleblock}
+\begin{alertblock}{Avoid}
+Do not install project packages into the system Python with \texttt{sudo pip}. Use the documented environment and package-management strategy.
+\end{alertblock}
+\end{frame}
+
+\subsection{NumPy and Basic Robotics Data Processing}
+
+\begin{frame}[fragile]{Why NumPy?}
+\framesubtitle{Robotics data often arrives as vectors, matrices, and images}
+\begin{verbatim}
+import numpy as np
+
+position_m = np.array([2.0, -1.0, 4.0])
+velocity_mps = np.array([0.2, 0.0, -0.1])
+\end{verbatim}
+\begin{block}{Array Mental Model}
+A NumPy array is a structured grid of mostly same-type values. A vector is one-dimensional, a table is two-dimensional, and an image is commonly a two- or three-dimensional array.
+\end{block}
+\begin{exampleblock}{Robotics Uses}
+Positions, velocities, point collections, camera frames, bounding boxes, masks, transformations, and batches of sensor samples.
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Array Shape, Data Type, and Indexing}
+\framesubtitle{Understand the structure before processing the values}
+\begin{verbatim}
+image = np.zeros((480, 640, 3), dtype=np.uint8)
+print(image.shape)   # (height, width, channels)
+print(image.dtype)   # uint8
+
+pixel = image[120, 300]
+\end{verbatim}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+\begin{block}{\texttt{shape}}
+The size along each axis. Never assume image dimensions without checking.
+\end{block}
+\end{column}
+\hfill
+\begin{column}{0.47\textwidth}
+\begin{block}{\texttt{dtype}}
+The numeric representation. It affects range, precision, memory, and arithmetic behavior.
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Vectorized Calculations}
+\framesubtitle{Express operations on complete arrays}
+\begin{verbatim}
+measurements_m = np.array([2.4, 2.1, 1.9, 2.2])
+mean_m = measurements_m.mean()
+minimum_m = measurements_m.min()
+valid = measurements_m > 0.0
+filtered = measurements_m[valid]
+\end{verbatim}
+\begin{exampleblock}{What Happened?}
+NumPy calculated statistics and applied one condition to every measurement. The Boolean mask selected only valid values.
+\end{exampleblock}
+\begin{block}{Engineering Rule}
+Vectorization can improve clarity and performance, but first verify array shape, units, coordinate frame, and data type.
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Distance and Tracking Error}
+\framesubtitle{A small numerical pattern used throughout robotics}
+\begin{verbatim}
+import numpy as np
+
+desired_m = np.array([5.0, 0.0, -4.0])
+measured_m = np.array([4.7, 0.2, -3.9])
+error_vector_m = desired_m - measured_m
+tracking_error_m = np.linalg.norm(error_vector_m)
+\end{verbatim}
+\begin{block}{Interpretation}
+Subtract positions to obtain an error vector. Its Euclidean norm gives one scalar distance between desired and measured positions.
+\end{block}
+\begin{alertblock}{Coordinate Discipline}
+Only subtract values expressed in compatible units and coordinate frames. NED and ENU vectors cannot be mixed without an explicit transformation.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Processing Detection Results}
+\framesubtitle{Filter observations before they enter the wider system}
+\begin{verbatim}
+detections = [
+    {"label": "car", "confidence": 0.88},
+    {"label": "person", "confidence": 0.41},
+]
+
+accepted = [d for d in detections
+            if d["confidence"] >= 0.60]
+\end{verbatim}
+\begin{block}{Pipeline Role}
+Python converts model output into structured observations: labels, confidence values, bounding boxes, timestamps, and frame identifiers.
+\end{block}
+\begin{alertblock}{Control Boundary}
+An accepted detection is still an observation. It should not directly command the drone; mission logic, validation, and flight-control safeguards remain separate.
+\end{alertblock}
+\end{frame}
+
+\subsection{Logging, Debugging, and Integration}
+
+\begin{frame}[fragile]{Logging Instead of Scattered Prints}
+\framesubtitle{Record what the program did and why}
+\begin{verbatim}
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+logger.info("Mission state: %s", "ORBIT")
+logger.warning("No camera frame received")
+logger.error("Configuration file is invalid")
+\end{verbatim}
+\begin{block}{Severity Levels}
+Use \texttt{DEBUG} for detailed diagnosis, \texttt{INFO} for normal milestones, \texttt{WARNING} for abnormal but recoverable situations, and \texttt{ERROR} for failed operations.
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Logging Inside a ROS~2 Node}
+\framesubtitle{Use the framework logger for node-level evidence}
+\begin{verbatim}
+self.get_logger().info("Mission ready")
+self.get_logger().warning("Waiting for odometry")
+self.get_logger().error("Invalid mission parameter")
+\end{verbatim}
+\begin{exampleblock}{Useful Log Content}
+Include the component, mission state, relevant value with units, and expected response. Avoid flooding the terminal from high-rate callbacks.
+\end{exampleblock}
+\begin{block}{Project Connection}
+The orbit controller logs readiness, state transitions, and tracking error while ROS~2 manages node-specific output.
+\end{block}
+\end{frame}
+
+\begin{frame}{A Disciplined Debugging Workflow}
+\framesubtitle{Observe, isolate, test, and verify}
+\begin{enumerate}
+\item Reproduce the problem with the exact command and environment.
+\item Read the complete traceback or ROS~2 log message.
+\item Identify the first relevant file, line, variable, topic, or callback.
+\item Inspect values, types, array shapes, paths, and active environment.
+\item Test one hypothesis with the smallest possible change.
+\item Rerun the original scenario and record the verified result.
+\end{enumerate}
+\begin{alertblock}{Avoid Random Repair}
+Repeated reinstallation, broad exception handling, and unrelated code changes destroy evidence and make the defect harder to isolate.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{From Python Function to ROS~2 Callback}
+\framesubtitle{The same fundamentals appear inside event-driven robotics code}
+\begin{verbatim}
+def odometry_callback(self, msg):
+    position = tuple(float(v) for v in msg.position)
+    self.latest_position = position
+    self.get_logger().debug(
+        "Position NED: %s", position)
+\end{verbatim}
+\begin{exampleblock}{Concept Mapping}
+\textbf{Function} becomes callback, \textbf{object attribute} stores state, \textbf{tuple} represents position, \textbf{loop/comprehension} converts values, and \textbf{logging} supports diagnosis.
+\end{exampleblock}
+\begin{block}{ROS~2 Reminder}
+The callback runs when a message arrives. Keep it predictable, non-blocking, and focused on one responsibility.
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{A Small Telemetry Publisher Pattern}
+\framesubtitle{Compute first, validate second, publish third}
+\begin{verbatim}
+def publish_altitude(self, down_m):
+    altitude_m = -float(down_m)
+    if altitude_m < 0.0:
+        self.get_logger().warning("Invalid altitude")
+        return
+
+    message = Float32()
+    message.data = altitude_m
+    self.altitude_publisher.publish(message)
+\end{verbatim}
+\begin{block}{System Pattern}
+Receive input, convert representation, validate assumptions, build a typed message, publish, and log unusual conditions.
+\end{block}
+\end{frame}
+
+\begin{frame}{How the Concepts Appear in the Internship Code}
+\framesubtitle{The refresher prepares you to read a complete robotics node}
+\footnotesize
+\begin{itemize}
+\item \textbf{Variables and dictionaries}: mission parameters and limits.
+\item \textbf{Tuples and lists}: positions, setpoints, and message fields.
+\item \textbf{Conditions and state enumeration}: mission transitions.
+\item \textbf{Functions and methods}: validation, timing, commands, and callbacks.
+\item \textbf{Class inheritance}: the controller extends a ROS~2 \texttt{Node}.
+\item \textbf{Exceptions}: invalid parameters stop initialization clearly.
+\item \textbf{Imports and modules}: trajectory mathematics remain separate.
+\item \textbf{Logging}: readiness, state changes, and tracking error are observable.
+\end{itemize}
+\begin{exampleblock}{Reading Strategy}
+Do not read the file as one long program. Identify the class state, initialization, communication interfaces, callbacks, helper methods, and repeating timer logic.
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}{Knowledge Check}
+\framesubtitle{You are ready to continue when you can explain these ideas}
+\begin{itemize}
+\item Which Python container best represents one position, a measurement history, and named configuration?
+\item Why should a distance function be separated from ROS~2 publication?
+\item What is the difference between a class and an object?
+\item Why does a ROS~2 Python node inherit from \texttt{Node}?
+\item When should an exception be caught, and when should it stop the program?
+\item Why use a virtual environment and \texttt{python -m pip}?
+\item What do NumPy \texttt{shape} and \texttt{dtype} tell us?
+\item Why is an AI detection not a direct flight-control command?
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Python-to-Robotics Roadmap}
+\framesubtitle{Foundations become components of the complete project}
+\begin{center}
+\textbf{Python fundamentals}
+\(\rightarrow\)
+\textbf{structured functions and classes}
+\(\rightarrow\)
+\textbf{NumPy data processing}\\[0.5em]
+\(\rightarrow\)
+\textbf{ROS~2 nodes and callbacks}
+\(\rightarrow\)
+\textbf{Gazebo/PX4 integration}
+\(\rightarrow\)
+\textbf{AI observations}
+\end{center}
+\pause
+\begin{exampleblock}{Next Step}
+The following ROS~2 tutorials will reuse these concepts to create packages, define nodes, exchange typed messages, process callbacks, and connect Python logic to the simulated drone system.
+\end{exampleblock}
+\end{frame}
+
+
+% ============================================================================
+% SECTION: End-to-End Object-Oriented Python for Robotics
+% Insert inside the existing Beamer document. No preamble is included.
+% ============================================================================
+
+\section{End-to-End Object-Oriented Python for Robotics}
+
+\subsection{Object-Oriented Python for Robotics}
+
+\begin{frame}{Object-Oriented Python: End-to-End Goal}
+\framesubtitle{Build one small robotics component progressively}
+
+\begin{center}
+    \Large
+    \textbf{From raw telemetry to a reusable drone monitor object}
+\end{center}
+
+\pause
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.30\textwidth}
+        \begin{block}{Store State}
+            Position, battery level, flight mode, and update time.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.30\textwidth}
+        \begin{block}{Apply Behavior}
+            Update telemetry, calculate altitude, and validate values.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.30\textwidth}
+        \begin{block}{Integrate}
+            Use the object inside a Python ROS~2 node.
+        \end{block}
+    \end{column}
+\end{columns}
+
+\begin{alertblock}{Learning Scope}
+    The objective is practical OOP for internship code, not every advanced
+    feature of the Python object model.
+\end{alertblock}
+\end{frame}
+
+
+\begin{frame}{Why Move Beyond Separate Variables?}
+\framesubtitle{Related data becomes difficult to manage as the system grows}
+
+\begin{block}{Procedural Starting Point}
+    A small script may store altitude, battery, mode, and position in separate
+    variables and pass them repeatedly between functions.
+\end{block}
+
+\pause
+
+\begin{exampleblock}{The Scaling Problem}
+    With several drones, sensors, callbacks, and mission phases, it becomes easy
+    to mix values belonging to different entities or update only part of the state.
+\end{exampleblock}
+
+\begin{block}{OOP Response}
+    A class defines one meaningful type. Each object keeps its own state and
+    exposes the operations allowed on that state.
+\end{block}
+
+\begin{center}
+    \textbf{Class = blueprint}
+    \qquad
+    \textbf{Object = one constructed instance}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 1: Define a Robotics Class}
+\framesubtitle{Group drone state under one clear concept}
+
+\begin{verbatim}
+class DroneState:
+    """Store the latest estimated state of one drone."""
+
+    def __init__(self, drone_id):
+        self.drone_id = drone_id
+        self.position_ned_m = (0.0, 0.0, 0.0)
+        self.battery_pct = 100.0
+        self.flight_mode = "IDLE"
+
+state = DroneState("uav_1")
+\end{verbatim}
+
+\begin{block}{What Python Creates}
+    \texttt{DroneState} is the class. \texttt{state} is one object.
+    The attributes belong to that specific object.
+\end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 2: Understand the Constructor and \texttt{self}}
+\framesubtitle{Initialize every object with a predictable state}
+
+\begin{verbatim}
+def __init__(self, drone_id):
+    self.drone_id = drone_id
+    self.position_ned_m = (0.0, 0.0, 0.0)
+    self.battery_pct = 100.0
+    self.flight_mode = "IDLE"
+\end{verbatim}
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.47\textwidth}
+        \begin{block}{\texttt{\_\_init\_\_}}
+            Runs automatically after Python creates a new object.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.47\textwidth}
+        \begin{block}{\texttt{self}}
+            Refers to the particular object whose method is running.
+        \end{block}
+    \end{column}
+\end{columns}
+
+\begin{exampleblock}{Intuition}
+    \texttt{self.battery\_pct} means ``the battery value belonging to this drone
+    state object.''
+\end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 3: Add Methods}
+\framesubtitle{Behavior operates on the object's own state}
+
+\begin{verbatim}
+class DroneState:
+    def __init__(self, drone_id):
+        self.drone_id = drone_id
+        self.position_ned_m = (0.0, 0.0, 0.0)
+
+    def update_position(self, north_m, east_m, down_m):
+        self.position_ned_m = (
+            float(north_m), float(east_m), float(down_m)
+        )
+
+    def altitude_m(self):
+        return -self.position_ned_m[2]
+\end{verbatim}
+
+\begin{exampleblock}{Responsibility}
+    The object stores NED position and provides the conversion from
+    \textit{Down} to positive altitude in one reusable location.
+\end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 4: Validate State Changes}
+\framesubtitle{Do not allow an object to accept meaningless values silently}
+
+\begin{verbatim}
+def update_battery(self, battery_pct):
+    battery_pct = float(battery_pct)
+
+    if not 0.0 <= battery_pct <= 100.0:
+        raise ValueError(
+            "battery_pct must be between 0 and 100"
+        )
+
+    self.battery_pct = battery_pct
+\end{verbatim}
+
+\begin{block}{Engineering Principle}
+    Validation belongs close to the state it protects. A clear exception prevents
+    invalid telemetry from becoming accepted object state.
+\end{block}
+
+\begin{alertblock}{Safety Boundary}
+    Software validation improves correctness, but it does not replace independent
+    flight-safety monitoring or real-world operational procedures.
+\end{alertblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 5: Encapsulation by Convention}
+\framesubtitle{Separate the public interface from internal representation}
+
+\begin{verbatim}
+class DroneState:
+    def __init__(self, drone_id):
+        self.drone_id = drone_id
+        self._position_ned_m = (0.0, 0.0, 0.0)
+
+    def update_position(self, north_m, east_m, down_m):
+        self._position_ned_m = (
+            float(north_m), float(east_m), float(down_m)
+        )
+\end{verbatim}
+
+\begin{block}{Python Convention}
+    A leading underscore communicates: ``this attribute is an internal
+    implementation detail.'' It is not a security mechanism.
+\end{block}
+
+\begin{exampleblock}{Benefit}
+    Other code uses \texttt{update\_position(...)} instead of depending directly
+    on how the position is stored internally.
+\end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 6: Expose a Readable Property}
+\framesubtitle{Provide value-like access while keeping calculation inside the class}
+
+\begin{verbatim}
+class DroneState:
+    def __init__(self, drone_id):
+        self.drone_id = drone_id
+        self._position_ned_m = (0.0, 0.0, 0.0)
+
+    @property
+    def altitude_m(self):
+        return -self._position_ned_m[2]
+
+state = DroneState("uav_1")
+print(state.altitude_m)
+\end{verbatim}
+
+\begin{block}{When a Property Fits}
+    Use a property for a simple, inexpensive value derived from object state.
+    Use a normal method when an operation performs significant work or has effects.
+\end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 7: Add a Useful String Representation}
+\framesubtitle{Make objects easier to inspect during debugging}
+
+\begin{verbatim}
+def __str__(self):
+    return (
+        f"{self.drone_id}: mode={self.flight_mode}, "
+        f"altitude={self.altitude_m:.2f} m, "
+        f"battery={self.battery_pct:.1f}%"
+    )
+
+print(state)
+\end{verbatim}
+
+\begin{exampleblock}{Why This Helps}
+    \texttt{\_\_str\_\_} converts the object into a concise human-readable summary
+    for terminal output, logs, and debugging.
+\end{exampleblock}
+
+\begin{alertblock}{Logging Practice}
+    Do not print high-rate object summaries on every callback. Log intentionally
+    and use throttling when the robotics framework provides it.
+\end{alertblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 8: Create Multiple Independent Objects}
+\framesubtitle{One class can represent several drones without mixing their state}
+
+\begin{verbatim}
+uav_1 = DroneState("uav_1")
+uav_2 = DroneState("uav_2")
+
+uav_1.update_position(2.0, 1.0, -4.0)
+uav_2.update_position(-3.0, 0.5, -2.0)
+
+print(uav_1.altitude_m)  # 4.0
+print(uav_2.altitude_m)  # 2.0
+\end{verbatim}
+
+\begin{block}{Core OOP Benefit}
+    Both objects share the same class definition, but each object owns a separate
+    set of attribute values.
+\end{block}
+
+\begin{exampleblock}{Robotics Analogy}
+    The class is the vehicle-state design. Each simulated drone receives its own
+    state object.
+\end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 9: Composition}
+\framesubtitle{Build a larger component from smaller focused objects}
+
+\begin{verbatim}
+class BatteryMonitor:
+    def __init__(self, warning_threshold_pct=25.0):
+        self.warning_threshold_pct = warning_threshold_pct
+
+    def is_low(self, battery_pct):
+        return battery_pct <= self.warning_threshold_pct
+
+class DroneMonitor:
+    def __init__(self, drone_id):
+        self.state = DroneState(drone_id)
+        self.battery_monitor = BatteryMonitor()
+\end{verbatim}
+
+\begin{block}{Meaning}
+    A \texttt{DroneMonitor} \textit{has a} state and \textit{has a} battery monitor.
+    This is composition.
+\end{block}
+
+\begin{exampleblock}{Design Preference}
+    Prefer composition when components have different responsibilities that work
+    together. It is usually clearer than deep inheritance hierarchies.
+\end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 10: Inheritance}
+\framesubtitle{Create a specialized type when the ``is a'' relationship is true}
+
+\begin{verbatim}
+from rclpy.node import Node
+
+class DroneMonitorNode(Node):
+    def __init__(self):
+        super().__init__("drone_monitor")
+        self.monitor = DroneMonitor("uav_1")
+\end{verbatim}
+
+\begin{block}{Relationship}
+    \texttt{DroneMonitorNode} \textit{is a} ROS~2 \texttt{Node}, so inheritance is
+    appropriate. It also \textit{has a} \texttt{DroneMonitor}, so composition is
+    appropriate for the project logic.
+\end{block}
+
+\begin{alertblock}{Avoid}
+    Do not use inheritance only to reuse a few lines of code. Use it when the child
+    genuinely satisfies the conceptual contract of the parent type.
+\end{alertblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 11: Connect a ROS~2 Subscription}
+\framesubtitle{A callback updates the composed domain object}
+
+\begin{verbatim}
+class DroneMonitorNode(Node):
+    def __init__(self):
+        super().__init__("drone_monitor")
+        self.monitor = DroneMonitor("uav_1")
+        self.subscription = self.create_subscription(
+            VehicleOdometry,
+            "/fmu/out/vehicle_odometry",
+            self.odometry_callback,
+            10,
+        )
+
+    def odometry_callback(self, msg):
+        self.monitor.state.update_position(*msg.position)
+\end{verbatim}
+
+\begin{exampleblock}{Concept Mapping}
+    The node receives communication events. The domain object stores and validates
+    the robotics state. Each class keeps one clear responsibility.
+\end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 12: Add Logging and Error Handling}
+\framesubtitle{Keep the node observable without hiding failures}
+
+\begin{verbatim}
+def odometry_callback(self, msg):
+    try:
+        self.monitor.state.update_position(*msg.position)
+    except (TypeError, ValueError) as exc:
+        self.get_logger().error(
+            f"Invalid odometry message: {exc}"
+        )
+        return
+
+    self.get_logger().debug(str(self.monitor.state))
+\end{verbatim}
+
+\begin{block}{Callback Pattern}
+    Receive data, convert it, validate it through the object interface, handle
+    expected failures, update state, and record useful evidence.
+\end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 13: Keep Configuration Outside the Class}
+\framesubtitle{Construct objects from explicit project settings}
+
+\begin{verbatim}
+config = {
+    "drone_id": "uav_1",
+    "battery_warning_pct": 25.0,
+}
+
+state = DroneState(config["drone_id"])
+battery_monitor = BatteryMonitor(
+    warning_threshold_pct=config["battery_warning_pct"]
+)
+\end{verbatim}
+
+\begin{block}{Separation of Concerns}
+    Configuration chooses values. The class defines behavior and validates the
+    values it receives. Avoid hiding project-specific constants inside methods.
+\end{block}
+
+\begin{exampleblock}{ROS~2 Connection}
+    In the complete project, many configurable values will be declared and read as
+    ROS~2 parameters rather than hard-coded Python constants.
+\end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Step 14: Test the Object Without ROS~2}
+\framesubtitle{Domain logic should be testable independently of communication}
+
+\begin{verbatim}
+def test_altitude_from_ned_position():
+    state = DroneState("test_uav")
+    state.update_position(1.0, 2.0, -4.5)
+    assert state.altitude_m == 4.5
+
+
+def test_invalid_battery_is_rejected():
+    state = DroneState("test_uav")
+    try:
+        state.update_battery(120.0)
+        assert False
+    except ValueError:
+        assert True
+\end{verbatim}
+
+\begin{exampleblock}{Testing Principle}
+    Test calculations and validation directly. Test ROS~2 communication separately.
+    Small focused objects make both tasks easier.
+\end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Complete End-to-End OOP Example I}
+\framesubtitle{Domain classes: state and monitoring logic}
+
+\scriptsize
+\begin{verbatim}
+class DroneState:
+    def __init__(self, drone_id):
+        self.drone_id = drone_id
+        self._position_ned_m = (0.0, 0.0, 0.0)
+        self.battery_pct = 100.0
+        self.flight_mode = "IDLE"
+
+    def update_position(self, north_m, east_m, down_m):
+        self._position_ned_m = (
+            float(north_m), float(east_m), float(down_m)
+        )
+
+    def update_battery(self, battery_pct):
+        value = float(battery_pct)
+        if not 0.0 <= value <= 100.0:
+            raise ValueError("battery_pct outside [0, 100]")
+        self.battery_pct = value
+
+    @property
+    def altitude_m(self):
+        return -self._position_ned_m[2]
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}[fragile]{Complete End-to-End OOP Example II}
+\framesubtitle{Composition: evaluate the state without controlling the drone}
+
+\scriptsize
+\begin{verbatim}
+class BatteryMonitor:
+    def __init__(self, warning_threshold_pct=25.0):
+        threshold = float(warning_threshold_pct)
+        if not 0.0 <= threshold <= 100.0:
+            raise ValueError("invalid warning threshold")
+        self.warning_threshold_pct = threshold
+
+    def is_low(self, battery_pct):
+        return float(battery_pct) <= self.warning_threshold_pct
+
+
+class DroneMonitor:
+    def __init__(self, drone_id, battery_warning_pct=25.0):
+        self.state = DroneState(drone_id)
+        self.battery_monitor = BatteryMonitor(
+            battery_warning_pct
+        )
+
+    def status(self):
+        return "LOW_BATTERY" if self.battery_monitor.is_low(
+            self.state.battery_pct
+        ) else "NOMINAL"
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}[fragile]{Complete End-to-End OOP Example III}
+\framesubtitle{ROS~2 integration: framework class plus project objects}
+
+\scriptsize
+\begin{verbatim}
+class DroneMonitorNode(Node):
+    def __init__(self):
+        super().__init__("drone_monitor")
+        self.monitor = DroneMonitor("uav_1", 25.0)
+        self.subscription = self.create_subscription(
+            VehicleOdometry,
+            "/fmu/out/vehicle_odometry",
+            self.odometry_callback,
+            10,
+        )
+
+    def odometry_callback(self, msg):
+        try:
+            self.monitor.state.update_position(*msg.position)
+        except (TypeError, ValueError) as exc:
+            self.get_logger().error(
+                f"Rejected odometry: {exc}"
+            )
+            return
+
+        self.get_logger().info(
+            f"altitude={self.monitor.state.altitude_m:.2f} m, "
+            f"status={self.monitor.status()}"
+        )
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}{How to Read an OOP Robotics File}
+\framesubtitle{Do not read hundreds of lines from top to bottom immediately}
+
+\begin{enumerate}
+    \item Identify each class and write its responsibility in one sentence.
+    \item Find the constructor and list the object's persistent attributes.
+    \item Separate public behavior from internal helper methods.
+    \item Locate framework interfaces: publishers, subscriptions, services, timers.
+    \item Trace one event from callback input to object update and output.
+    \item Identify validation, exception handling, logging, and shutdown behavior.
+\end{enumerate}
+
+\begin{exampleblock}{Apply This to the Orbit Controller}
+    The controller \textit{is a} ROS~2 node. It owns mission parameters,
+    communication interfaces, measured state, desired state, paths, and a timer.
+    Its methods implement callbacks, commands, state transitions, and publication.
+\end{exampleblock}
+\end{frame}
+
+
+\begin{frame}{OOP Design Checklist for the Internship}
+\framesubtitle{Simple rules for maintainable robotics Python}
+
+\begin{itemize}
+    \item Give each class one coherent responsibility.
+    \item Initialize objects in a valid, predictable state.
+    \item Use explicit names with units and coordinate frames.
+    \item Validate values at system boundaries.
+    \item Prefer composition for collaborating capabilities.
+    \item Use inheritance when a genuine ``is a'' relationship exists.
+    \item Keep callbacks short and avoid blocking operations.
+    \item Separate calculations from ROS~2 communication when practical.
+    \item Log useful evidence without flooding high-rate loops.
+    \item Test domain logic independently from the complete simulation.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{OOP Knowledge Check}
+\framesubtitle{Explain the design, not only the syntax}
+
+\begin{itemize}
+    \item What is the difference between a class and an object?
+    \item Why does every instance method receive \texttt{self}?
+    \item Which state should be initialized in \texttt{\_\_init\_\_}?
+    \item When should behavior be a property rather than a method?
+    \item Why is \texttt{DroneMonitorNode} inheritance, while its
+          \texttt{DroneMonitor} relationship is composition?
+    \item Where should telemetry values be validated?
+    \item Why should domain calculations be testable without ROS~2?
+    \item How does a state-machine class improve mission clarity?
+\end{itemize}
+
+\begin{center}
+    \textbf{Next: errors, files, configuration, environments, and NumPy}
+\end{center}
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{References and Further Practice}
+
+\begin{frame}{References and Further Reading I}
+\framesubtitle{Python language and program structure}
+\scriptsize
+\begin{thebibliography}{9}
+\bibitem{python-tutorial}
+Python Software Foundation, \emph{The Python Tutorial}.\\
+\url{https://docs.python.org/3/tutorial/}
+
+\bibitem{python-classes}
+Python Software Foundation, \emph{Classes}.\\
+\url{https://docs.python.org/3/tutorial/classes.html}
+
+\bibitem{python-errors}
+Python Software Foundation, \emph{Errors and Exceptions}.\\
+\url{https://docs.python.org/3/tutorial/errors.html}
+
+\bibitem{python-modules}
+Python Software Foundation, \emph{Modules}.\\
+\url{https://docs.python.org/3/tutorial/modules.html}
+
+\bibitem{pep8}
+Python Software Foundation, \emph{PEP 8: Style Guide for Python Code}.\\
+\url{https://peps.python.org/pep-0008/}
+\end{thebibliography}
+\end{frame}
+
+\begin{frame}{References and Further Reading II}
+\framesubtitle{Environments, packages, data processing, and logging}
+\scriptsize
+\begin{thebibliography}{9}
+\bibitem{venv}
+Python Software Foundation, \emph{venv: Creation of Virtual Environments}.\\
+\url{https://docs.python.org/3/library/venv.html}
+
+\bibitem{pip}
+Python Packaging Authority, \emph{pip User Guide}.\\
+\url{https://pip.pypa.io/en/stable/user_guide/}
+
+\bibitem{packaging}
+Python Packaging Authority, \emph{Installing Packages}.\\
+\url{https://packaging.python.org/en/latest/tutorials/installing-packages/}
+
+\bibitem{numpy}
+NumPy Developers, \emph{NumPy: The Absolute Basics for Beginners}.\\
+\url{https://numpy.org/doc/stable/user/absolute_beginners.html}
+
+\bibitem{logging}
+Python Software Foundation, \emph{Logging HOWTO}.\\
+\url{https://docs.python.org/3/howto/logging.html}
+\end{thebibliography}
+\end{frame}

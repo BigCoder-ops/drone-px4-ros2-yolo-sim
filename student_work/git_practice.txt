@@ -1,0 +1,5 @@
+Student Git practice
+Repository:
+/home/vboxuser/quard_um6p_intership
+Current branch:
+docs/git-practice

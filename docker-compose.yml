@@ -1,0 +1,22 @@
+# WSL2 + WSLg (Windows 11 / recent Windows 10).
+#   CPU:  docker compose up --build
+#   GPU:  docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+# (GPU needs the NVIDIA Container Toolkit; build with TORCH=gpu)
+services:
+  sim:
+    build:
+      context: .
+      args:
+        TORCH: ${TORCH:-cpu}
+    image: quard-um6p-sim
+    stdin_open: true
+    tty: true
+    network_mode: host
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0}
+      - XDG_RUNTIME_DIR=/mnt/wslg/runtime-dir
+      - PULSE_SERVER=/mnt/wslg/PulseServer
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /mnt/wslg:/mnt/wslg

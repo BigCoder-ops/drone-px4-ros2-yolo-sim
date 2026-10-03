@@ -1,0 +1,569 @@
+\section{Mission and Foundations}
+% ----------------------------------------------------------------------------
+% OPENING SECTION: MISSION, SYSTEM VISION, AND LEARNING ROADMAP
+% ---------------------------------------- ------------------------------------
+
+\begin{frame}{First, Observe the Destination}
+        
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.9\textwidth]{./images/Gemini_Generated_Image_vo4vdvvo4vdvvo4v.jpeg}
+    \end{figure}
+
+\end{frame}
+
+\begin{frame}{The Internship Mission}
+\framesubtitle{Build a reproducible autonomous-drone inspection system in simulation}
+\footnotesize
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+        \begin{block}{Engineering Need}
+            Inspection tasks may involve large, repetitive, difficult-to-access,
+            or potentially hazardous areas. Aerial robots can help collect
+            visual evidence efficiently and consistently.
+        \end{block}
+    \end{column}
+    \pause
+    \begin{column}{0.48\textwidth}
+        \begin{exampleblock}{Internship Mission}
+            Configure, program, simulate, test, and document a quadcopter that:
+            \begin{itemize}
+                \setlength{\itemsep}{0.22em}
+                \item follows a planned inspection mission;
+                \item observes a simulated scene with a camera;
+                \item detects selected objects;
+                \item records useful mission evidence.
+            \end{itemize}
+        \end{exampleblock}
+    \end{column}
+\end{columns}
+\end{frame}
+
+% ----------------------------------------------------------------------------
+\begin{frame}{First, Observe the Destination}
+
+    \footnotesize
+\begin{center}
+    \Large\bfseries
+    Observe the complete demonstration before studying its components.
+\end{center}
+\vspace{0.35cm}
+\begin{center}
+\footnotesize
+Gazebo world
+$\longrightarrow$
+PX4-controlled flight
+$\longrightarrow$
+ROS 2 data exchange
+$\longrightarrow$
+Camera perception
+$\longrightarrow$
+Mission evidence
+\end{center}
+
+\begin{alertblock}{Important Boundary}
+A successful simulation is evidence of software integration, not proof that a real aircraft is ready or safe to fly.
+\end{alertblock}
+
+\end{frame}
+
+
+\begin{frame}{First, Observe the Destination}
+        
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.9\textwidth]{./images/intershipimg.jpeg}
+    \end{figure}
+
+\end{frame}
+
+
+
+% % ----------------------------------------------------------------------------
+% \begin{frame}{The Expected Final Demonstration}
+% \framesubtitle{What the completed GitHub-based project should reproduce}
+% \footnotesize
+% \begin{columns}[T,onlytextwidth]
+%     \begin{column}{0.32\textwidth}
+%         \begin{block}{1. Launch}
+%             Start the required simulation, flight-control, communication, and perception processes from a documented workspace.
+%         \end{block}
+%     \end{column}
+%     \pause
+%     \begin{column}{0.32\textwidth}
+%         \begin{block}{2. Observe}
+%             Watch the vehicle, mission state, camera stream, ROS 2 interfaces, and detector outputs.
+%         \end{block}
+%     \end{column}
+%     \pause
+%     \begin{column}{0.32\textwidth}
+%         \begin{block}{3. Verify}
+%             Compare intended behavior with logs, messages, detections, screenshots, and saved mission evidence.
+%         \end{block}
+%     \end{column}
+% \end{columns}
+% \begin{exampleblock}{Definition of Success}
+% The system launches predictably, its components exchange the expected information, the simulated drone executes the intended mission, and the results can be explained and reproduced from the repository documentation.
+% \end{exampleblock}
+% \end{frame}
+
+% ----------------------------------------------------------------------------
+\begin{frame}{The Engineering Challenge}
+\framesubtitle{One visible mission depends on several connected technical layers}
+\footnotesize
+\begin{block}{Why Is the Project Technically Interesting?}
+A drone inspection mission is a \textbf{system-of-systems problem}. Motion, sensing, communication, software, perception, testing, and documentation must work together.
+\end{block}
+\begin{center}
+% \scriptsize
+\textbf{
+Operating environment
+$\rightarrow$
+Simulation
+$\rightarrow$
+Flight control
+$\rightarrow$
+Communication
+$\rightarrow$
+Perception
+$\rightarrow$
+Evidence
+}
+\end{center}
+\pause
+\begin{alertblock}{A Chain Is Verified Link by Link}
+A detector cannot process a missing camera stream. A mission node cannot guide the vehicle through an incorrect interface. A working local setup cannot be reproduced without controlled dependencies and documentation.
+\end{alertblock}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}{One Project, Several Foundations}
+\framesubtitle{A complete robotic system is built layer by layer}
+
+\footnotesize
+
+\begin{center}
+    \large
+    \textbf{The drone demonstration is the visible result.}\\[0.3em]
+    \normalsize
+    Behind it, several technical foundations must work together.
+\end{center}
+
+\pause
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.30\textwidth}
+        \begin{block}{Prepare}
+            Configure the computer and create a reproducible project environment.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.30\textwidth}
+        \begin{block}{Build}
+            Program, simulate, connect, and test the robotic components.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.30\textwidth}
+        \begin{block}{Deliver}
+            Document the work, preserve the results, and share a working project.
+        \end{block}
+    \end{column}
+\end{columns}
+
+\pause
+
+% \begin{exampleblock}{Think of the Project as a Team}
+%     Ubuntu provides the workplace, Bash executes instructions, Git preserves progress,
+%     Python implements logic, ROS~2 connects components, Gazebo provides the simulated
+%     world, and AI interprets camera data.
+% \end{exampleblock}
+
+\begin{center}
+    \textbf{You are not expected to master everything on Day~1.}\\
+    You will learn each foundation when the project needs it.
+\end{center}
+\end{frame}
+
+
+\begin{frame}{Technology Ecosystem I}
+\framesubtitle{Preparing the environment and preserving your work}
+
+\footnotesize
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+        \begin{block}{Ubuntu: The Workplace}
+            Ubuntu is the Linux distribution used to run the project.
+            It provides the files, processes, packages, and services
+            required by the robotics tools.
+        \end{block}
+
+        \begin{block}{Terminal and Bash: The Control Desk}
+            The \textbf{terminal} is the window where commands are entered.
+            \textbf{Bash} is the shell that reads and executes those commands,
+            variables, and scripts.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.48\textwidth}
+        \begin{block}{Git: The Project Timeline}
+            Git records changes on the computer. It allows students to create
+            checkpoints, compare versions, and recover a previous working state.
+        \end{block}
+
+        \begin{block}{GitHub: The Shared Project Home}
+            GitHub hosts the Git repository online. It supports collaboration,
+            documentation, issue tracking, review, and delivery of the internship
+            project.
+        \end{block}
+    \end{column}
+\end{columns}
+
+\pause
+
+\begin{exampleblock}{How These Foundations Support the Drone Project}
+    \centering
+    \textbf{Ubuntu} runs the tools
+    \(\rightarrow\)
+    \textbf{Bash} launches the workflow
+    \(\rightarrow\)
+    \textbf{Git} preserves the work
+    \(\rightarrow\)
+    \textbf{GitHub} makes the project reproducible and shareable.
+\end{exampleblock}
+\end{frame}
+
+
+
+
+
+\begin{frame}{Technology Ecosystem II}
+\framesubtitle{From programming logic to simulated drone intelligence}
+
+\footnotesize
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+        \begin{block}{Python: The Logic}
+            Implements readable robotics programs, data processing,
+            mission utilities, tests, and AI integration.
+        \end{block}
+
+        \begin{block}{ROS~2: The Communication Network}
+            Connects software components using nodes, topics, messages,
+            services, and parameters. ROS~2 is not an operating system.
+        \end{block}
+
+        \begin{block}{Gazebo: The Virtual Test Environment}
+            Simulates the drone, camera, objects, environment, and physics
+            before any real-world deployment.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.48\textwidth}
+        \begin{block}{PX4: The Flight Controller}
+            Estimates the drone state, stabilizes the vehicle, and follows
+            flight references inside the simulation.
+        \end{block}
+
+        \begin{block}{AI and YOLOv8: The Perception}
+            Processes camera images and detects objects of interest.
+            Detection results provide observations, not direct flight control.
+        \end{block}
+
+        \begin{alertblock}{Important Engineering Boundary}
+            A successful simulation helps us develop and test the system,
+            but it does not guarantee that the drone is ready for safe
+            real-world flight.
+        \end{alertblock}
+    \end{column}
+\end{columns}
+
+\end{frame}
+
+
+% % ----------------------------------------------------------------------------
+% \begin{frame}{Professional Working Method}
+%     \framesubtitle{Progress is created through disciplined observation}
+%     \footnotesize
+%     \begin{columns}[T,onlytextwidth]
+%         \begin{column}{0.48\textwidth}
+%             \begin{block}{Before Execution}
+%                 \begin{itemize}
+%                     \setlength{\itemsep}{0.22em}
+%                     \item identify the current directory and environment;
+%                     \item predict the expected output;
+%                     \item understand which component will be affected;
+%                     \item change one factor at a time.
+%                 \end{itemize}
+%             \end{block}
+%         \end{column}
+%         \begin{column}{0.48\textwidth}
+%             \begin{block}{After Execution}
+%                 \begin{itemize}
+%                     \setlength{\itemsep}{0.22em}
+%                     \item read complete outputs and error messages;
+%                     \item compare observation with expectation;
+%                     \item preserve commands, logs, and screenshots;
+%                     \item document results and limitations honestly.
+%                 \end{itemize}
+%             \end{block}
+%         \end{column}
+%     \end{columns}
+%     \begin{alertblock}{Engineering Habit}
+%         A desired trajectory, a clean visualization, or a single successful launch is not sufficient evidence. Each important claim must be supported by an observable test.
+%     \end{alertblock}
+% \end{frame}
+
+% ----------------------------------------------------------------------------
+\begin{frame}{Internship Deliverables}
+    \framesubtitle{What students are expected to build and submit}
+    \footnotesize
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{block}{Working Engineering Assets}
+                \begin{itemize}
+                    \setlength{\itemsep}{0.22em}
+                    \item structured Git repository and clear history;
+                    \item reproducible environment and configuration;
+                    \item ROS 2 packages, Python source code, and launch files;
+                    \item working Gazebo/PX4 inspection simulation;
+                    \item camera and object-detection integration.
+                \end{itemize}
+            \end{block}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{exampleblock}{Evidence and Communication}
+                \begin{itemize}
+                    \setlength{\itemsep}{0.22em}
+                    \item layer-level and end-to-end tests;
+                    \item logs, screenshots, and mission results;
+                    \item installation and execution instructions;
+                    \item final demonstration;
+                    \item technical report with results, limitations, and future work.
+                \end{itemize}
+            \end{exampleblock}
+        \end{column}
+    \end{columns}
+    \begin{alertblock}{Delivery Standard}
+        A reviewer should be able to clone the repository, follow the documentation, reproduce the demonstration, and understand what was verified.
+    \end{alertblock}
+\end{frame}
+
+% ----------------------------------------------------------------------------
+\begin{frame}{Learning Roadmap}
+    \framesubtitle{Each foundation unlocks one part of the final GitHub project}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.16}
+    \begin{tabularx}{\textwidth}{>{\bfseries\color{um6p-color-dark-blue}}p{0.22\textwidth} X >{\centering\arraybackslash}p{0.24\textwidth}}
+        \toprule
+        Foundation & Contribution to the Project & Practical Outcome \\
+        \midrule
+        Ubuntu & Provides the Linux engineering environment & Prepare the workstation \\
+        Terminal and Bash & Operate, configure, launch, inspect, and troubleshoot & Run the documented workflow \\
+        Git and GitHub & Preserve and share a reproducible project & Clone, manage, document, and deliver \\
+        Python for robotics & Express logic and process project data & Read and modify project programs \\
+        ROS 2 & Connect software components through defined interfaces & Build and verify communication \\
+        Gazebo and PX4 & Simulate the world and controlled drone motion & Execute the inspection mission \\
+        AI integration & Convert camera data into perception results & Produce inspection evidence \\
+        \bottomrule
+    \end{tabularx}
+\end{frame}
+
+
+\begin{frame}{Goal of the Tutorials}
+    
+    \begin{alertblock}{End-to-End Objective}
+        The tutorials are not isolated courses. Together, they provide the foundations required to reproduce, understand, test, and improve the autonomous-drone project hosted on GitHub.
+    \end{alertblock}
+
+\end{frame}
+
+
+
+
+% ----------------------------------------------------------------------------
+\begin{frame}{The Student Journey}
+    % \framesubtitle{Progress from guided reproduction to engineering ownership}
+    % \footnotesize
+    \begin{enumerate}
+        \setlength{\itemsep}{0.35em}
+        \item \textbf{Orient:} understand the mission, architecture, repository, and expected evidence.
+        \item \textbf{Prepare:} configure Ubuntu, tools, dependencies, workspace, and project files.
+        \item \textbf{Learn the foundations:} practise Bash, Git, Python, ROS 2, Gazebo, PX4, and perception concepts in context.
+        \item \textbf{Integrate:} connect mission logic, simulated flight, camera data, and object detection.
+        \item \textbf{Verify:} test one layer at a time before testing the complete pipeline.
+        \item \textbf{Task:} complete the mission assigned to you by the instructor, and document your work.
+        \item \textbf{Deliver:} publish reproducible code, configuration, evidence, documentation, and a technical report.
+    \end{enumerate}
+\end{frame}
+
+% ----------------------------------------------------------------------------
+% \begin{frame}{Complete System Pipeline}
+% \framesubtitle{From engineering environment to reproducible mission evidence}
+% \footnotesize
+% \begin{block}{Foundation and Execution Layer}
+% \centering
+% Ubuntu $+$ Terminal/Bash $+$ Python environment
+% $\longrightarrow$
+% workspace, dependencies, scripts, and running processes
+% \end{block}
+% \pause
+% \begin{block}{Command Flow: Mission Decision to Simulated Motion}
+% \centering
+% ROS 2 mission node
+% $\longrightarrow$
+% Micro XRCE-DDS
+% $\longrightarrow$
+% PX4 autopilot
+% $\longrightarrow$
+% Gazebo drone physics
+% \end{block}
+% \pause
+% \begin{exampleblock}{Evidence Flow: Simulated World to Inspection Result}
+% \centering
+% Simulated camera
+% $\longrightarrow$
+% ROS-Gazebo image bridge
+% $\longrightarrow$
+% YOLOv8 detector
+% $\longrightarrow$
+% mission evidence and report
+% \end{exampleblock}
+% \pause
+% \begin{alertblock}{Reproducibility Layer}
+% Git and GitHub preserve the source code, configuration, history, instructions, tests, limitations, and evidence required to rebuild the complete pipeline.
+% \end{alertblock}
+% \end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{frame}{Transition to the Technical Foundations}
+\framesubtitle{One foundation completed, the next one begins}
+
+% \footnotesize
+
+% ------------------------------------------------------------------
+% CURRENT PROGRESS
+% ------------------------------------------------------------------
+\begin{center}
+    \textbf{\color{um6p-dark}Internship Learning Roadmap}
+\end{center}
+
+\vspace{0.15cm}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{c@{\hspace{0.10cm}}c@{\hspace{0.10cm}}c@{\hspace{0.10cm}}c@{\hspace{0.10cm}}c}
+
+% % Completed foundation
+% \colorbox{um6p-color-dark-green!20}{
+%     \parbox[c][0.85cm][c]{1.65cm}{
+%         \centering
+%         \scriptsize\bfseries
+%         Ubuntu\\
+%         \textcolor{um6p-color-dark-green}{Completed}
+%     }
+% }
+
+
+% Current foundation
+\colorbox{um6p-color-light-blue}{
+    \parbox[c][0.85cm][c]{1.65cm}{
+        \centering
+        \scriptsize\bfseries
+        Ubuntu\\
+        \textcolor{um6p-dark}{Current}
+    }
+}
+
+
+& $\longrightarrow$ &
+
+\colorbox{black!7}{
+    \parbox[c][1.05cm][c]{2.15cm}{
+        \centering
+        \scriptsize\bfseries
+        Terminal\\
+        and Bash\\[-0.05cm]
+        % \textcolor{um6p-dark}{Current}
+    }
+}
+
+& $\longrightarrow$ &
+
+% Upcoming foundations
+\colorbox{black!7}{
+    \parbox[c][0.85cm][c]{1.65cm}{
+        \centering
+        \scriptsize
+        Git and\\
+        GitHub
+    }
+}
+
+\\[0.25cm]
+
+\colorbox{black!7}{
+    \parbox[c][0.85cm][c]{1.65cm}{
+        \centering
+        \scriptsize
+        Python for\\
+        Robotics
+    }
+}
+
+& $\longrightarrow$ &
+
+\colorbox{black!7}{
+    \parbox[c][0.85cm][c]{2.15cm}{
+        \centering
+        \scriptsize
+        ROS 2
+    }
+}
+
+& $\longrightarrow$ &
+
+\colorbox{black!7}{
+    \parbox[c][0.85cm][c]{1.65cm}{
+        \centering
+        \scriptsize
+        Gazebo\\
+        and PX4
+    }
+}
+
+\end{tabular}
+
+\vspace{0.15cm}
+
+\colorbox{black!7}{
+    \parbox[c][0.75cm][c]{2.1cm}{
+        \centering
+        \scriptsize
+        AI Integration
+    }
+}
+\end{center}
+
+
+\end{frame}

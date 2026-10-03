@@ -1,0 +1,840 @@
+% ============================================================================
+% SECTION: Understanding Ubuntu and the Linux Environment
+% Insert directly into the existing Beamer document.
+% No preamble or document-level commands are included.
+% ============================================================================
+
+\section{Understanding Ubuntu and the Linux Environment}
+
+
+\begin{frame}{What Is an Operating System?}
+\framesubtitle{The coordinator between the computer, applications, and user}
+
+\begin{center}
+    \textbf{User and applications}
+    \(\longleftrightarrow\)
+    \textbf{Operating system}
+    \(\longleftrightarrow\)
+    \textbf{Hardware}
+\end{center}
+
+\pause
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.47\textwidth}
+        \begin{block}{Intuitive Analogy}
+            Think of the operating system as the manager of a laboratory.
+            It assigns resources, organizes equipment, and controls access.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.49\textwidth}
+        \begin{block}{What It Manages}
+            \begin{itemize}
+                \item files and storage;
+                \item memory and running programs;
+                \item users and permissions;
+                \item devices, networks, and services.
+            \end{itemize}
+        \end{block}
+    \end{column}
+\end{columns}
+
+\begin{exampleblock}{Project Connection}
+    When Gazebo uses the GPU, PX4 runs as a process, or ROS~2 reads a camera,
+    the operating system coordinates the required resources.
+\end{exampleblock}
+\end{frame}
+
+
+
+% ----------------------------------------------------------------------------
+% LINUX, KERNEL, AND UBUNTU: INTUITIVE INTRODUCTION
+% ----------------------------------------------------------------------------
+
+\begin{frame}{Who Manages the Computer?}
+\framesubtitle{Programs need controlled access to physical resources}
+
+\footnotesize
+
+\begin{columns}[T]
+    
+    % --- LEFT COLUMN: The Demand (Software) ---
+    \begin{column}{0.48\textwidth}
+        \begin{block}{Active Programs (The Demand)}
+            During the drone project, multiple heavy programs run simultaneously:
+            \begin{itemize}
+                \setlength{\itemsep}{0.25em}
+                \item \textbf{Gazebo:} simulates physics;
+                \item \textbf{PX4:} controls flight logic;
+                \item \textbf{ROS 2:} exchanges messages;
+                \item \textbf{YOLOv8:} detects objects.
+            \end{itemize}
+        \end{block}
+    \end{column}
+
+    % --- RIGHT COLUMN: The Supply (Hardware) ---
+    \begin{column}{0.48\textwidth}
+        \pause
+        \begin{exampleblock}{Shared Resources (The Supply)}
+            All these programs must compete for the same physical hardware:
+            \begin{itemize}
+                \setlength{\itemsep}{0.25em}
+                \item \textbf{Processor} (CPU time);
+                \item \textbf{Memory} (RAM allocation);
+                \item \textbf{Files} (Storage access);
+                \item \textbf{Devices} (GPU and Network).
+            \end{itemize}
+        \end{exampleblock}
+    \end{column}
+
+\end{columns}
+
+\pause
+\vspace{0.2cm}
+
+% --- BOTTOM SPANNING BLOCK: The Punchline ---
+\begin{alertblock}{The Fundamental Problem \& Key Intuition}
+    These programs cannot safely share resources independently. If Gazebo and YOLOv8 both demand 100\% of the GPU at the same time, the system crashes. 
+    
+    \vspace{0.15cm}
+    \textbf{Solution:} Between the software and the physical computer, we need a trusted, central traffic controller. This low-level manager is the \textbf{kernel}.
+\end{alertblock}
+
+\end{frame}
+
+% ----------------------------------------------------------------------------
+
+\begin{frame}{The Kernel}
+\framesubtitle{The low-level manager between software and hardware}
+
+\footnotesize
+
+\begin{columns}[T] % [T] aligns the columns at the top
+
+    % ---------------- LEFT COLUMN: The Diagram ---------------- %
+    \begin{column}{0.48\textwidth}
+        \begin{center}
+            \textbf{Applications and Robotics Programs}
+            
+            \vspace{0.12cm}
+            
+            Gazebo \quad PX4 \quad ROS 2 \quad Python \quad YOLOv8
+            
+            \vspace{0.12cm}
+            
+            $\Downarrow$
+            
+            \vspace{0.12cm}
+            
+            \colorbox{um6p-color-light-blue}{
+                % Adjusted to 0.9\textwidth relative to this column's width
+                \parbox[c][0.95cm][c]{0.9\textwidth}{
+                    \centering
+                    \textbf{Linux Kernel}\\
+                    \scriptsize
+                    Controls and coordinates access to computer resources
+                }
+            }
+            
+            \vspace{0.12cm}
+            
+            $\Downarrow$
+            
+            \vspace{0.12cm}
+            
+            \textbf{Processor, Memory, Storage, Network, and Devices}
+        \end{center}
+    \end{column}
+
+    % ---------------- RIGHT COLUMN: The Explanation ---------------- %
+    \begin{column}{0.48\textwidth}
+        \pause
+        
+        \begin{block}{What Does the Kernel Manage?}
+        \begin{itemize}
+            \setlength{\itemsep}{0.22em}
+            \item \textbf{Processes:} which programs are running and when they use the processor;
+            \item \textbf{Memory:} which memory regions belong to each running program;
+            \item \textbf{Files and storage:} how data is read, written, and protected;
+            \item \textbf{Devices:} how software communicates with hardware through drivers;
+            % \item \textbf{Permissions:} which users and programs may access each resource.
+        \end{itemize}
+        \end{block}
+        
+        % \vspace{0.2cm}
+        % \begin{exampleblock}{Simple Analogy}
+        % The kernel is like an air-traffic controller. Programs request access
+        % to shared resources, and the kernel coordinates those requests to keep
+        % the complete system organized and stable.
+        % \end{exampleblock}
+        
+    \end{column}
+
+\end{columns}
+
+\end{frame}
+% ----------------------------------------------------------------------------
+
+
+\begin{frame}{Linux Is More Than a Kernel}
+\framesubtitle{From the technical core to a complete operating environment}
+
+\footnotesize
+
+\begin{columns}[T,onlytextwidth]
+
+    % --- LEFT: THE ENGINE (KERNEL) ---
+    \begin{column}{0.31\textwidth}
+        \begin{block}{1. The Linux Kernel}
+            The low-level engine that talks directly to the hardware:
+            \begin{itemize}
+                \setlength{\itemsep}{0.2em}
+                \item processes;
+                \item memory;
+                \item files \& networks;
+                \item hardware devices.
+            \end{itemize}
+        \end{block}
+    \end{column}
+
+    % --- CENTER: THE TOOLS (ECOSYSTEM) ---
+    \begin{column}{0.34\textwidth}
+        \begin{block}{2. User Tools \& Ecosystem}
+            Software that makes the kernel actually usable by humans:
+            \begin{itemize}
+                \setlength{\itemsep}{0.2em}
+                \item a shell (Bash);
+                \item terminal commands;
+                \item software libraries;
+                \item a package manager (\texttt{apt}).
+            \end{itemize}
+        \end{block}
+    \end{column}
+
+    % --- RIGHT: THE CAR (DISTRIBUTION) ---
+    \begin{column}{0.31\textwidth}
+        \begin{exampleblock}{3. Linux Distribution}
+            A complete, ready-to-use operating system assembled from both parts.
+            
+            \vspace{0.25cm}
+            \centering
+            \colorbox{um6p-color-light-blue!40}{
+                \parbox[c][0.6cm][c]{0.85\textwidth}{
+                    \centering
+                    \textbf{Ubuntu 22.04}\\
+                }
+            }
+        \end{exampleblock}
+    \end{column}
+
+\end{columns}
+
+\pause
+\vspace{0.3cm}
+
+% --- BOTTOM: THE PUNCHLINE EQUATION ---
+\begin{alertblock}{The Operating System Equation}
+    \centering
+    \normalsize
+    \textbf{Kernel} 
+    \quad \textbf{\Large +} \quad 
+    \textbf{Tools, Shell \& Apps} 
+    \quad \textbf{\Large =} \quad 
+    \textbf{Distribution (Ubuntu)}
+\end{alertblock}
+
+\end{frame}
+
+
+\begin{frame}{Linux Is More Than a Kernel}
+\framesubtitle{From the technical core to a complete operating environment}
+
+
+\begin{alertblock}{The Operating System Equation}
+    \centering
+    \normalsize
+    \textbf{Kernel} 
+    \quad \textbf{\Large +} \quad 
+    \textbf{Tools, Shell \& Apps} 
+    \quad \textbf{\Large =} \quad 
+    \textbf{Distribution (Ubuntu)}
+\end{alertblock}
+
+\vfill
+\centering
+% Replace with your actual image path
+\includegraphics[width=0.42\textwidth]{./images/linux.png}
+
+\end{frame}
+
+
+
+\begin{frame}{Operating System Comparison}
+\framesubtitle{Why don't we just program the drone on Windows or macOS?}
+
+\footnotesize
+\begin{columns}[T,onlytextwidth]
+
+    % --- LEFT: Ubuntu (The Chosen One) ---
+    \begin{column}{0.32\textwidth}
+        \begin{exampleblock}{Ubuntu (Linux)}
+            \textbf{The Robotics Standard}
+            \begin{itemize}
+                \setlength{\itemsep}{0.2em}
+                \item \textbf{Native:} ROS 2 and Gazebo are built primarily for this OS.
+                \item \textbf{Open:} Complete, unfiltered access to hardware.
+                \item \textbf{Focus:} Command-line automation.
+            \end{itemize}
+        \end{exampleblock}
+    \end{column}
+
+    % --- CENTER: Windows ---
+    \begin{column}{0.31\textwidth}
+        \begin{block}{Windows}
+            \textbf{The General Desktop}
+            \begin{itemize}
+                \setlength{\itemsep}{0.2em}
+                \item \textbf{Familiar:} Broadest consumer support.
+                \item \textbf{Focus:} Graphical User Interfaces (GUI).
+                \item \textbf{Barrier:} Requires Virtual Machines or WSL to run Linux tools, adding overhead.
+            \end{itemize}
+        \end{block}
+    \end{column}
+
+    % --- RIGHT: macOS ---
+    \begin{column}{0.31\textwidth}
+        \begin{block}{macOS}
+            \textbf{The Premium Workspace}
+            \begin{itemize}
+                \setlength{\itemsep}{0.2em}
+                \item \textbf{Unix-based:} Excellent developer environment.
+                \item \textbf{Closed:} Locked to Apple hardware.
+                \item \textbf{Barrier:} Compiling complex robotics binaries natively is often unsupported.
+            \end{itemize}
+        \end{block}
+    \end{column}
+
+\end{columns}
+
+\pause
+% \vspace{0.3cm}
+
+% --- BOTTOM: The Takeaway ---
+\begin{alertblock}{The Engineering Decision}
+    While Windows and macOS are excellent for daily tasks, forcing them to run advanced robotics software requires workarounds (like Virtual Machines) that drain CPU and RAM. \textbf{Ubuntu provides the native, zero-overhead environment required for the drone's digital twin.}
+\end{alertblock}
+
+\end{frame}
+
+
+
+\begin{frame}{Why One Exact Ubuntu Version Matters}
+\framesubtitle{Compatibility is part of engineering, not an installation detail}
+
+\begin{center}
+    \textbf{Ubuntu version}
+    \(\rightarrow\)
+    \textbf{available packages}
+    \(\rightarrow\)
+    \textbf{compatible robotics stack}
+\end{center}
+
+\pause
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.47\textwidth}
+        \begin{block}{Example Compatibility Pairs}
+            \begin{itemize}
+                \item ROS~2 Humble: Ubuntu 22.04
+                \item ROS~2 Jazzy: Ubuntu 24.04
+            \end{itemize}
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.47\textwidth}
+        \begin{block}{Internship Rule}
+            Follow the version declared in the project documentation.
+            Do not replace it only because another release is newer.
+        \end{block}
+    \end{column}
+\end{columns}
+
+\begin{alertblock}{Why This Matters}
+    A tutorial written for another Ubuntu or ROS~2 release may contain different
+    package names, dependencies, or setup commands.
+\end{alertblock}
+\end{frame}
+
+
+\begin{frame}{The Filesystem: One Organized Tree}
+\framesubtitle{Linux organizes files from a single starting point}
+
+\begin{center}
+    \texttt{/} \(\rightarrow\) \texttt{/home} \(\rightarrow\)
+    \texttt{/home/student} \(\rightarrow\) \texttt{project workspace}
+\end{center}
+
+\pause
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.47\textwidth}
+        \begin{block}{Filesystem}
+            The rule and structure used to organize files and directories.
+            The top of the Linux tree is called \textbf{root} and is written
+            as \texttt{/}.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.47\textwidth}
+        \begin{block}{Home Directory}
+            Each user normally works inside a personal directory such as
+            \texttt{/home/student}. The shortcut \texttt{\~{}} means
+            ``my home directory.''
+        \end{block}
+    \end{column}
+\end{columns}
+
+\begin{exampleblock}{Project Connection}
+    File paths tell scripts where to find worlds, models, source code,
+    configuration files, logs, and datasets.
+\end{exampleblock}
+\end{frame}
+
+
+\begin{frame}{Users, Administrator, and Root}
+\framesubtitle{Permissions protect the system from accidental changes}
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.31\textwidth}
+        \begin{block}{User}
+            A normal account for daily work, coding, simulation, and documents.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.31\textwidth}
+        \begin{block}{Administrator}
+            A trusted user allowed to perform selected system-level tasks.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.31\textwidth}
+        \begin{block}{Root}
+            The system's all-powerful administrative account.
+            Root can modify almost anything.
+        \end{block}
+    \end{column}
+\end{columns}
+
+\pause
+
+\begin{exampleblock}{What \texttt{sudo} Means}
+    \texttt{sudo} requests permission to run one command with administrative
+    privileges. It is not a decoration to add when a command fails.
+\end{exampleblock}
+
+\begin{alertblock}{Safe Working Habit}
+    Work as a normal user. Use administrative privileges only when the command
+    is understood and the trusted documentation requires them.
+\end{alertblock}
+\end{frame}
+
+
+\begin{frame}{Packages, Dependencies, and Repositories}
+\framesubtitle{How Ubuntu obtains and maintains software}
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.31\textwidth}
+        \begin{block}{Package}
+            A prepared unit of software with metadata needed for installation
+            and maintenance.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.31\textwidth}
+        \begin{block}{Dependency}
+            Another package or library required for the software to work.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.31\textwidth}
+        \begin{block}{Repository}
+            A configured software source from which packages and updates
+            can be obtained.
+        \end{block}
+    \end{column}
+\end{columns}
+
+\end{frame}
+
+
+% \begin{frame}{Processes and the Working Environment}
+% \framesubtitle{Installed software is not the same as running software}
+
+% \begin{columns}[T,onlytextwidth]
+%     \begin{column}{0.47\textwidth}
+%         \begin{block}{Process}
+%             A process is a running instance of a program with its own identifier,
+%             resources, and state.
+%         \end{block}
+
+%         \begin{exampleblock}{Project Examples}
+%             Gazebo, PX4, a ROS~2 node, and a Python detector may run as separate
+%             processes.
+%         \end{exampleblock}
+%     \end{column}
+%     \hfill
+%     \begin{column}{0.47\textwidth}
+%         \begin{block}{Environment}
+%             The settings visible to a process, including variables and paths
+%             that help software locate tools, packages, models, and configuration.
+%         \end{block}
+
+%         \begin{exampleblock}{Why Setup Commands Matter}
+%             A program may be correctly installed but unavailable in the current
+%             shell until the required environment is configured.
+%         \end{exampleblock}
+%     \end{column}
+% \end{columns}
+% \end{frame}
+
+
+\begin{frame}{Terminal, Shell, and Bash}
+\framesubtitle{The window, the interpreter, and the specific tool}
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.31\textwidth}
+        \begin{block}{Terminal}
+            The application window that displays text and accepts keyboard input.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.31\textwidth}
+        \begin{block}{Shell}
+            The command interpreter that reads instructions and starts programs.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.31\textwidth}
+        \begin{block}{Bash}
+            A widely used shell that supports commands, variables, scripts,
+            redirection, and automation.
+        \end{block}
+    \end{column}
+\end{columns}
+
+\pause
+
+\begin{exampleblock}{Restaurant Analogy}
+    The terminal is the counter, the shell is the person interpreting the order,
+    and Bash is one specific language and rule set used to express that order.
+\end{exampleblock}
+
+\begin{center}
+    \textbf{Next tutorial:} we will use the terminal and Bash safely,
+    one command at a time.
+\end{center}
+\end{frame}
+
+
+\begin{frame}{Open Source Is More Than Free Access}
+\framesubtitle{It is a collaborative engineering model}
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.47\textwidth}
+        \begin{block}{Open-Source Software}
+            Source code is available under a license that defines how it may be
+            inspected, used, modified, and shared.
+        \end{block}
+
+        \begin{block}{Community Collaboration}
+            Developers contribute code, reviews, documentation, tests,
+            bug reports, and technical discussions.
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.47\textwidth}
+        \begin{block}{Modular Software}
+            Complex systems are divided into components with clear responsibilities
+            and interfaces.
+        \end{block}
+
+        \begin{block}{Documentation}
+            Installation steps, assumptions, versions, and known problems are
+            recorded so that others can repeat the work.
+        \end{block}
+    \end{column}
+\end{columns}
+
+\begin{exampleblock}{Professional Habit}
+    Reusing open-source software does not remove engineering responsibility.
+    We still verify versions, licenses, interfaces, behavior, and assumptions.
+\end{exampleblock}
+\end{frame}
+
+
+\begin{frame}{Reproducibility: ``It Works on My Computer'' Is Not Enough}
+\framesubtitle{Another student should be able to obtain the same result}
+
+\begin{center}
+    \textbf{Same repository}
+    \(+\)
+    \textbf{same versions}
+    \(+\)
+    \textbf{documented steps}
+    \(\rightarrow\)
+    \textbf{comparable result}
+\end{center}
+
+\pause
+
+\begin{columns}[T,onlytextwidth]
+    \begin{column}{0.47\textwidth}
+        \begin{block}{Record}
+            \begin{itemize}
+                \item Ubuntu and ROS~2 versions;
+                \item required packages and dependencies;
+                \item configuration and environment variables;
+                \item launch and test commands.
+            \end{itemize}
+        \end{block}
+    \end{column}
+    \hfill
+    \begin{column}{0.47\textwidth}
+        \begin{block}{Verify}
+            \begin{itemize}
+                \item start from a clean terminal;
+                \item follow the documented sequence;
+                \item compare expected and observed outputs;
+                \item report missing assumptions.
+            \end{itemize}
+        \end{block}
+    \end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Error Messages Are Engineering Evidence}
+\framesubtitle{Troubleshooting begins with observation, not random commands}
+
+\begin{enumerate}
+    \item \textbf{Stop and read} the complete message.
+    \item \textbf{Locate} the first useful error, file, package, or process name.
+    \item \textbf{Check context}: directory, command, versions, and environment.
+    \item \textbf{Form one hypothesis} and test one change at a time.
+    \item \textbf{Document the verified fix} and how it was validated.
+\end{enumerate}
+
+\pause
+
+\begin{exampleblock}{Beginner-Friendly Question}
+    Instead of asking ``Why does nothing work?'', ask:
+    ``Which component failed, what evidence identifies it, and what changed
+    since the last working state?''
+\end{exampleblock}
+
+\begin{alertblock}{Avoid}
+    Blindly adding \texttt{sudo}, repeatedly reinstalling everything,
+    or copying commands written for another software version.
+\end{alertblock}
+\end{frame}
+
+
+
+
+
+\begin{frame}{What You Should Now Be Able to Explain}
+\framesubtitle{Conceptual checkpoint before using the command line}
+
+\begin{itemize}
+    \item An \textbf{operating system} coordinates applications, users, and hardware.
+    \item \textbf{Ubuntu} is a Linux distribution; \textbf{Linux} provides the kernel foundation.
+    \item Ubuntu is selected because it offers a supported and reproducible robotics environment.
+    \item A \textbf{filesystem} organizes files; users and permissions control access.
+    \item Packages come from repositories and may require dependencies.
+    \item Running programs are processes that receive settings from their environment.
+    \item Open-source robotics depends on collaboration, modularity, documentation,
+          reproducibility, and disciplined troubleshooting.
+\end{itemize}
+
+\pause
+
+\begin{center}
+    \Large
+    \textbf{Next: Terminal and Bash Foundations}
+\end{center}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}{Transition to the Technical Foundations}
+\framesubtitle{One foundation completed, the next one begins}
+
+% \footnotesize
+
+% ------------------------------------------------------------------
+% CURRENT PROGRESS
+% ------------------------------------------------------------------
+\begin{center}
+    \textbf{\color{um6p-dark}Internship Learning Roadmap}
+\end{center}
+
+\vspace{0.15cm}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{c@{\hspace{0.10cm}}c@{\hspace{0.10cm}}c@{\hspace{0.10cm}}c@{\hspace{0.10cm}}c}
+
+% Completed foundation
+\colorbox{um6p-color-dark-green!20}{
+    \parbox[c][0.85cm][c]{1.65cm}{
+        \centering
+        \scriptsize\bfseries
+        Ubuntu\\
+        \textcolor{um6p-color-dark-green}{Completed}
+    }
+}
+
+
+& $\longrightarrow$ &
+
+\colorbox{um6p-color-light-blue}{
+    \parbox[c][1.05cm][c]{2.15cm}{
+        \centering
+        \scriptsize\bfseries
+        Terminal\\
+        and Bash\\[-0.05cm]
+        \textcolor{um6p-dark}{Current}
+    }
+}
+
+& $\longrightarrow$ &
+
+% Upcoming foundations
+\colorbox{black!7}{
+    \parbox[c][0.85cm][c]{1.65cm}{
+        \centering
+        \scriptsize
+        Git and\\
+        GitHub
+    }
+}
+
+\\[0.25cm]
+
+\colorbox{black!7}{
+    \parbox[c][0.85cm][c]{1.65cm}{
+        \centering
+        \scriptsize
+        Python for\\
+        Robotics
+    }
+}
+
+& $\longrightarrow$ &
+
+\colorbox{black!7}{
+    \parbox[c][0.85cm][c]{2.15cm}{
+        \centering
+        \scriptsize
+        ROS 2
+    }
+}
+
+& $\longrightarrow$ &
+
+\colorbox{black!7}{
+    \parbox[c][0.85cm][c]{1.65cm}{
+        \centering
+        \scriptsize
+        Gazebo\\
+        and PX4
+    }
+}
+
+\end{tabular}
+
+\vspace{0.15cm}
+
+\colorbox{black!7}{
+    \parbox[c][0.75cm][c]{2.1cm}{
+        \centering
+        \scriptsize
+        AI Integration
+    }
+}
+\end{center}
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{frame}{References and Further Reading I}
+\framesubtitle{Ubuntu and Linux foundations}
+
+\scriptsize
+\begin{thebibliography}{9}
+    \bibitem{ubuntu-about}
+    Ubuntu, \emph{About the Ubuntu Project}.\\
+    \url{https://ubuntu.com/about}
+
+    \bibitem{ubuntu-docs}
+    Canonical, \emph{Official Ubuntu Documentation}.\\
+    \url{https://help.ubuntu.com/}
+
+    \bibitem{ubuntu-desktop-docs}
+    Canonical, \emph{Ubuntu Desktop Documentation}.\\
+    \url{https://documentation.ubuntu.com/desktop/}
+
+    \bibitem{linux-kernel}
+    The Linux Kernel Organization, \emph{Linux Kernel Documentation}.\\
+    \url{https://docs.kernel.org/}
+
+    \bibitem{filesystem}
+    Linux Foundation, \emph{Filesystem Hierarchy Standard}.\\
+    \url{https://refspecs.linuxfoundation.org/fhs.shtml}
+\end{thebibliography}
+\end{frame}
+
+
+\begin{frame}{References and Further Reading II}
+\framesubtitle{Packages, permissions, and robotics compatibility}
+
+\scriptsize
+\begin{thebibliography}{9}
+    \bibitem{ubuntu-packages}
+    Ubuntu, \emph{Ubuntu Packages Search}.\\
+    \url{https://packages.ubuntu.com/}
+
+    \bibitem{apt-guide}
+    Debian Project, \emph{APT User's Guide}.\\
+    \url{https://www.debian.org/doc/manuals/apt-guide/}
+
+    \bibitem{sudo-docs}
+    Ubuntu Community Help Wiki, \emph{RootSudo}.\\
+    \url{https://help.ubuntu.com/community/RootSudo}
+
+    % \bibitem{ros-humble}
+    % Open Robotics, \emph{ROS~2 Humble Installation on Ubuntu 22.04}.\\
+    % \url{https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html}
+
+    % \bibitem{ros-jazzy}
+    % Open Robotics, \emph{ROS~2 Jazzy Installation on Ubuntu 24.04}.\\
+    % \url{https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html}
+\end{thebibliography}
+\end{frame}

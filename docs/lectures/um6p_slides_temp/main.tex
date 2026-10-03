@@ -1,0 +1,28 @@
+\documentclass[pdf]{beamer}
+\usepackage{um6p-vanguard-beamer}
+\include{user-commands}
+
+% TODO update your information in the information.tex file
+\input{information.tex}
+
+\begin{document}
+    {
+    % Remove navigation symbols from title-page as we group them in regular frames
+    % Can't find better way of doing it, leaving like this for now. It works.
+    \setbeamertemplate{navigation symbols}{}
+    \begin{frame}[plain]
+        \titlepage
+    \end{frame}
+    }
+
+
+
+  \begin{frame} {Outline}   
+    \tableofcontents[sectionstyle=show,
+    subsectionstyle=show/shaded/hide,
+    subsubsectionstyle=show/shaded/hide]
+  \end{frame}
+    
+    \input{content.tex}
+
+\end{document}

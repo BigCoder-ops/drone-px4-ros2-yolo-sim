@@ -1,0 +1,258 @@
+% **********************************************************************************************************
+\section{Introduction}
+
+\begin{frame}{Introduction}
+    \begin{itemize}
+        \item Brief overview of the topic
+        \item Objectives or goals of the presentation
+        \item Structure of the presentation
+    \end{itemize}
+\end{frame}
+% **********************************************************************************************************
+
+
+% **********************************************************************************************************
+\section{Main Content}
+
+
+\begin{frame}[fragile]{More with bullet points}
+\framesubtitle{Unrolling}
+  \begin{itemize}[<+->]
+    \item You could also unroll the slides in a sequence.
+    \item Just added \verb|[<+->]| option to \verb|\begin{itemize}| in this frame.
+    \item \textbf{Note}: If you use verbatim test (i.e. the \verb|\verb| command) in a frame, the \verb|[fragile]| option must be specified on the frame, otherwise the compiler will run into problems.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{More with bullet points}
+\framesubtitle{Alerts and repeats}
+  Sections 12.1 through 12.3 of the \hrefcol{https://www.ctan.org/tex-archive/macros/latex/contrib/beamer/doc/beameruserguide.pdf}{Beamer user
+  manual} demonstrate many more features, like alerts and repeats.
+  \begin{itemize}
+    \item The \verb|\alert{}| feature can be particularly useful.
+    \item Like \alert<2>{this}.
+    \item You may as well choose the highlighting to stick.
+      \begin{itemize}
+        \item Previous one did not, but \alert<3->{this one} will.
+      \end{itemize}
+    \item Another common slide type involves columns and/or images.
+      \begin{itemize}
+        \item We show them in the \alert<4>{next slides}.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{Images and columns}
+\begin{columns}
+\begin{column}{0.7\textwidth}
+Adding images works like in normal \LaTeX:
+\begin{block}{Code for Adding Images}
+\begin{verbatim}
+\usepackage{graphicx}
+% ...
+\includegraphics[width=\textwidth]
+{images/uic_quad.pdf}
+\end{verbatim}
+\end{block}
+This slide layout was achieved using the \verb|columns| feature. The number and widths of the columns is totally user preference. Another columns example follows on the next slide.
+\end{column}
+\begin{column}{0.3\textwidth}
+\includegraphics[width=\textwidth]
+{images/um6p-pergola.jpg}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Another images/columns example}
+\begin{columns}
+\begin{column}{0.35\textwidth}
+\includegraphics[width=\textwidth]{plots/min_fuel.png}
+\captionof{figure}{Minimum fuel trajectory}
+\end{column}
+\begin{column}{0.3\textwidth}
+\textbf{Left:} Solving for optimal fuel consumption \textbf{Right:} Solving for optimal time taken
+\end{column}
+\begin{column}{0.35\textwidth}
+\includegraphics[width=\textwidth]{plots/min_time.png}
+\captionof{figure}{Minimum time trajectory}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Blocks}
+Blocks are another great way to partition your slide. They can be combined with columns, as shown here.
+\scriptsize
+\begin{block}{Standard Blocks}
+For the light theme, their color matches the footline. We will discuss light and dark themes soon.
+\begin{verbatim}
+\begin{block}{title}
+content...
+\end{block}
+\end{verbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Blocks}
+\begin{colorblock}[black]{um6p-dark-palette-3}{Color Blocks}
+Similar to the ones on the left, but you pick the color. Text will be white by 
+default, but you may set it with an optional argument.
+\begin{verbatim}
+\begin{colorblock}[black]{um6p-dark}{title}
+content...
+\end{colorblock}
+\end{verbatim}
+\end{colorblock}
+\end{frame}
+
+
+
+
+% ===========================================================================
+\begin{frame}{Definition \& Theorem}
+\scriptsize
+
+\begin{um6p-def}{- Group}
+A \textit{group} is a set $G$ together with an operation $\cdot : G \times G \to G$ such that the following conditions hold:
+\begin{itemize}
+    \item (Associativity) For all $a, b, c \in G$, we have $(a \cdot b) \cdot c = a \cdot (b \cdot c)$.
+    \item (Identity) There exists an element $e \in G$ such that for all $a \in G$, $a \cdot e = e \cdot a = a$.
+    \item (Inverse) For each element $a \in G$, there exists an element $a^{-1} \in G$ such that $a \cdot a^{-1} = a^{-1} \cdot a = e$.
+\end{itemize}
+\end{um6p-def}
+
+\begin{um6p-thm}{- Lagrange's Theorem}
+Let $G$ be a finite group, and let $H$ be a subgroup of $G$. Then the order (number of elements) of $H$ divides the order of $G$. In other words, if $|G|$ and $|H|$ represent the number of elements in $G$ and $H$, respectively, then:
+\[
+|G| = [G:H] \cdot |H|,
+\]
+where $[G:H]$ is the index of $H$ in $G$, representing the number of distinct left cosets of $H$ in $G$.
+\end{um6p-thm}
+\end{frame}
+% ===========================================================================
+
+% ===========================================================================
+\begin{frame}{Proposition, Corollary, Example \& Remark}
+\scriptsize
+
+\begin{um6p-prop}{}
+Let $G$ be a group, and let $e$ be its identity element. Then $e$ is unique, meaning if $e'$ is another identity element in $G$, we have $e = e'$.
+\end{um6p-prop}
+
+\begin{um6p-cor}{}
+In any group $G$, the inverse of each element is unique.
+\end{um6p-cor}
+
+\begin{um6p-ex}{}
+Consider the set $\mathbb{Z}$ of integers under addition. This forms a group where the identity element is $0$, and for any $a \in \mathbb{Z}$, the inverse of $a$ is $-a$.
+\end{um6p-ex}
+
+\begin{um6p-rmk}{}
+The associativity property in a group does not imply commutativity. A group is called \textit{abelian} if $a \cdot b = b \cdot a$ for all $a, b \in G$.
+\end{um6p-rmk}
+
+\end{frame}
+% -----------
+
+% -----------
+\begin{frame}[fragile]{Algorithm}
+\begin{algorithm}[H]
+\fontsize{6}{1}\selectfont
+\caption{Bellman-Kalaba (adapted from \hrefcol{https://www.ctan.org/tex-archive/macros/latex/contrib/algorithmicx/algorithmicx.pdf}{algorithmicx documentation}).}
+\begin{algorithmic}
+\REQUIRE $G$, $u$, $l$, $p$
+% \ENSURE optional output
+\FORALL {$v \in V(G)$}
+    \STATE $l(v) \leftarrow \infty$
+\ENDFOR
+\STATE $l(u) \leftarrow 0$
+\REPEAT
+    \FOR {$i \leftarrow 1, n$}
+        \STATE $min \leftarrow l(v_i)$
+        \FOR {$j \leftarrow 1, n$}
+            \IF {$min > \CALL{Edge}{v_i, v_j} + l(v_j)$}
+                \STATE $min \leftarrow \CALL{Edge}{v_i, v_j} + l(v_j)$ \ANNOTATE{Example comment}
+                \STATE $p(i) \leftarrow v_j$
+            \ENDIF
+        \ENDFOR
+        \STATE $l’(i) \leftarrow min$
+    \ENDFOR
+    \STATE $changed \leftarrow l \not= l’$
+    \STATE $l \leftarrow l’$
+\UNTIL{$\neg changed$}
+% \RETURN optional return
+\end{algorithmic}
+\end{algorithm}
+\end{frame}
+% -----------
+
+% -----------
+\begin{frame}
+\frametitle{Tables}
+\scriptsize
+\begingroup
+\usefont{T1}{ppl}{m}{n}
+\renewcommand{\arraystretch}{1.5} % Default value: 1
+\setlength{\arrayrulewidth}{0.5mm} % Adjust the thickness of \hline
+\arrayrulecolor{white} % Change the color of the next \hline to white 
+
+\centering
+\begin{tabular}{p{20mm}ccc}
+%    \hline
+    \rowcolor{um6p-dark}
+    \textbf{Service} & \textbf{Priority} & \textbf{Started} & \textbf{Responsible} \\
+    \hline
+    \rowcolor{um6p-light}
+    Internal \newline Messaging &  $\clubsuit\clubsuit\clubsuit$ & $\ballotx$ & \\
+    \hline
+    \rowcolor{um6p-light}
+    Notification &  $\clubsuit\clubsuit\clubsuit$ & $\ballotcheck$ &  \\
+    \hline
+    \rowcolor{um6p-light}
+    Announcement & $\clubsuit\clubsuit\clubsuit$ & $\ballotx$ &  \\
+    \hline
+    \rowcolor{um6p-light}
+    Event \newline Management & $\clubsuit\clubsuit\clubsuit$ & $\ballotx$ &  \\
+    \hline
+    \rowcolor{um6p-light}
+    Internal \newline Newsletter & $\clubsuit\clubsuit\clubsuit$ & $\ballotx$ &  \\
+    \hline
+    \rowcolor{um6p-light}
+    Feedback \& Survey & $\clubsuit$ & $\ballotx$ &  \\
+    \hline
+    \rowcolor{um6p-light}
+    Podcast \& \newline Webinar Archive & $\clubsuit$ & $\ballotx$ &  \\
+%    \hline
+\end{tabular}
+
+\endgroup
+\end{frame}
+% -----------
+% **********************************************************************************************************
+
+% **********************************************************************************************************
+\section{Conclusion}
+
+\begin{frame}{Conclusion}
+    \begin{itemize}
+        \item Summary of key points
+        \item Call to action or next steps
+        \item Closing remarks
+    \end{itemize}
+\end{frame}
+% **********************************************************************************************************
+
+% **********************************************************************************************************
+\section{Q\&A}
+
+\begin{frame}{Questions \& Answers}
+    \begin{center}
+        Thank you for your attention! \\
+        Any questions?
+    \end{center}
+\end{frame}
+% **********************************************************************************************************
+
+

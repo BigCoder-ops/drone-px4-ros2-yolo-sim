@@ -1,0 +1,234 @@
+\usepackage{hyperref}
+\usepackage{charter}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+%\usefonttheme[onlymath]{serif} % Math looking fine!
+\usefonttheme{professionalfonts}
+\usepackage{arev}
+\usepackage[font=small,labelfont=bf]{caption} % Required for specifying captions to tables and figures
+\usepackage{amsfonts,amsmath,oldgerm,algorithmic,algorithm}
+%\usepackage[table]{xcolor}
+%\usepackage{times}
+\usepackage{xcolor,colortbl}
+\usepackage{booktabs}% http://ctan.org/pkg/booktabs
+\usepackage{multicol}
+\usepackage[framemethod=tikz]{mdframed}
+\usepackage{lmodern}
+\usepackage{tcolorbox}
+%\usepackage[most]{tcolorbox}
+%\usepackage{enumitem}
+
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\newcommand*\CALL[2]{\textsc{#1}(#2)}
+\newcommand*\ANNOTATE[1]{\hfill\(\triangleright\) #1}%
+
+
+% The default colors used at Loughborough University
+\definecolor{newspaper}{HTML}{F4F0E8}
+\definecolor{um6p-dark}{HTML}{D7492A}
+\definecolor{um6p-light}{HTML}{F8CBAD}
+
+\definecolor{um6p-color-dark-green}{HTML}{2A9D8F}
+\definecolor{um6p-color-dark-blue}{HTML}{264653}
+\definecolor{um6p-color-light-blue}{HTML}{D4E1F5}
+\definecolor{um6p-color-dark-red}{HTML}{FF9292}
+\definecolor{um6p-color-red}{HTML}{FFB4B4}
+
+\definecolor{um6p-dark-palette-1}{HTML}{E97356}
+\definecolor{um6p-dark-palette-2}{HTML}{B23721}
+\definecolor{um6p-dark-palette-3}{HTML}{2A97D7}
+\definecolor{um6p-dark-palette-4}{HTML}{D78E2A}
+\definecolor{um6p-dark-palette-5}{HTML}{D72A5F}
+\definecolor{um6p-dark-palette-6}{HTML}{2AD749}
+\definecolor{um6p-dark-palette-7}{HTML}{492AD7}
+
+\newcommand{\hrefcol}[2]{\textcolor{um6p-dark-palette-5}{\href{#1}{#2}}}
+
+%% Title slide formatting %%
+\setbeamerfont{subtitle}{size=\scriptsize}
+\setbeamertemplate{title page}{
+    \begin{tikzpicture}[remember picture, overlay]
+    \fill[um6p-dark] (current page.south west) rectangle (current page.north east);
+    \draw[um6p-dark, line width=1ex] (current page.north west) -- (current page.north east);
+    \node[anchor=center, align=left, text width=\textwidth, inner sep=0pt, text=white, text height=2.5ex] at (current page.center) {
+        \usebeamerfont{title}
+            {\centering\inserttitle\\[1cm]}
+        \rule{\linewidth}{0.4pt}
+        \usebeamerfont{subtitle}
+            {\insertauthor\\[0.2cm]}
+            {\insertinstitute\par}
+            \rule{\linewidth}{0.4pt}\\[0.5cm]
+            {\insertdate}
+    };
+    \node[anchor=south west, inner sep=0pt, xshift=1.55ex, yshift=.5ex] at (current page.south west) {\includegraphics[width=5cm]{logos/um6p-white}};
+    \node[anchor=south west, inner sep=0pt, xshift=30ex, yshift=-0.7ex] at (current page.south west){\includegraphics[width=2.5cm]{logos/vanguard-white}};
+    \node[anchor=south east, inner sep=0pt, xshift=-2ex, yshift=2.3ex, align=right, text=white, font=\tiny] at (current page.south east) {\fontfamily{phv}\selectfont\textbf{\#Empowering Minds.}};
+    \end{tikzpicture}
+}
+
+%% General frame formatting %%
+%\setbeamerfont*{block title}{family=\sffamily,series=\bfseries,size=\Huge}
+\setbeamerfont{frametitle}{size=\Large}
+
+%\setbeamertemplate{headline}{%
+%    {\color{um6p-dark}\rule{\paperwidth}{1ex}}%
+%}
+
+% Used to change the color of titles and subtitles - avoids chaging frametitle
+\setbeamercolor*{titlelike}{use=structure, fg=um6p-dark, bg=white}
+
+\setbeamercolor*{footline in head/foot}{use=structure, fg=white, bg=um6p-dark}
+\setbeamertemplate{footline}{%
+    \usebeamertemplate*{headline}
+    \begin{beamercolorbox}[ht=3ex, dp=1ex]{footline in head/foot}
+      \vspace{-0.07cm}
+      \hspace{1.2em}\includegraphics[width=1cm]{logos/um6p-white-short}\quad
+      \hfill\hbox{\usebeamertemplate***{navigation symbols}}\hspace{.5em}
+    \end{beamercolorbox}%
+}
+
+%% General configurations within frames %%
+
+% Used to change the color of itemize items
+\setbeamercolor{itemize item}{fg=um6p-dark}
+% Remove navigation symbols from within frame added in footline
+\setbeamertemplate{sidebar right}{}
+% add page number
+\addtobeamertemplate{navigation symbols}{}{%
+    \usebeamerfont{footline}%
+    \usebeamercolor[fg]{footline}%
+    \hspace{1em}%
+    \insertframenumber/\inserttotalframenumber
+}
+
+
+% Set up the template for frames with custom background color
+\setbeamertemplate{background canvas}{
+    \begin{tikzpicture}[remember picture,overlay]
+%        \fill[white] (current page.south west) rectangle (current page.north east);
+        \fill[newspaper] (current page.south west) rectangle (current page.north east);
+    \end{tikzpicture}
+}
+\setbeamercolor{frametitle}{bg=um6p-dark,fg=white} % You can change 'fg' (foreground) to your preference
+% Set color for navigation symbols (bottom navigation bar)
+\setbeamercolor{navigation symbols}{fg=um6p-light}
+
+
+
+\setbeamercolor{alerted text}{fg=um6p-dark-palette-7}
+
+%\setbeamercolor{sidebar}{bg=um6p-dark}
+
+%\setbeamerfont{section number projected}{%
+%  family=\rmfamily,series=\bfseries,size=\normalsize}
+%\setbeamercolor{section number projected}{bg=black,fg=yellow}
+
+\setbeamertemplate{section in toc}[square]
+\setbeamertemplate{subsection in toc}[square]
+\setbeamerfont{section number projected}{size=\large}
+\setbeamerfont{subsection in toc}{size=\small}
+\setbeamercolor{section number projected}{bg=um6p-light,fg=um6p-dark}
+\setbeamercolor{subsection number projected}{bg=um6p-light,fg=um6p-dark}
+\setbeamercolor{section in toc}{fg=um6p-dark}
+\setbeamercolor{subsection in toc}{fg=um6p-dark}
+
+\AtBeginSection[]{
+  \begin{frame}[plain]
+    \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide,subsubsectionstyle=show/shaded/hide]
+  \end{frame}
+}
+\AtBeginSubsection[]{
+  \begin{frame}
+    \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide,subsubsectionstyle=show/shaded/hide]
+  \end{frame}
+}
+
+
+% Bullets in several levels
+%\setbeamertemplate{itemize item}{\textbullet}
+\setbeamertemplate{itemize subitem}{\color{um6p-dark} \textendash}
+\setbeamertemplate{itemize subsubitem}{\textbullet}
+
+
+% *******************************
+%            Blocks
+% *******************************
+\setbeamercolor{block title}{bg=um6p-dark,fg=white}
+\setbeamercolor*{block body}{use={normal text},bg=um6p-light,fg=black}
+
+%
+%\setbeamercolor{block title example}{fg=turtlegreen!30!white,bg=turtlegreen!40!black}
+%\setbeamercolor{block body example}{parent=normal text,bg=turtlegreen, fg=white}
+%% 
+%\setbeamercolor{block title alerted}{fg=lightred!30!white,bg=lightred!40!black}
+%\setbeamercolor{block body alerted}{parent=normal text,bg=crimsonred, fg=white}
+
+
+\newenvironment{colorblock}[3][white]{%
+	\begingroup
+	\setbeamercolor{block title}{fg=#1,bg=#2}
+	\setbeamercolor{block body} {fg=#1,bg=#2}
+	\begin{block}{#3}
+	}{%
+	\end{block}
+	\endgroup
+}
+% *******************************
+
+%\setbeamertemplate{navigation symbols}{} 	% Turns off PDF navigation symbols
+
+% Redefine the theorem environment using tcolorbox
+\newtcolorbox{um6p-def}[2][]{colback=um6p-light!40!white, colframe=um6p-color-dark-blue!85!blue,
+  arc=0pt,outer arc=0pt, % sharp corners
+  fonttitle=\bfseries,title={Definition #2},#1}
+
+\newtcolorbox{um6p-thm}[2][]{colback=um6p-light!40!white, colframe=um6p-color-dark-green!50!um6p-color-dark-blue,
+  arc=0pt,outer arc=0pt, % sharp corners
+  fonttitle=\bfseries,title={Theorem #2},#1}
+
+\newtcolorbox{um6p-prop}[2][]{colback=um6p-light!40!white, colframe=um6p-color-dark-green!95!green,
+  arc=0pt,outer arc=0pt, % sharp corners
+  fonttitle=\bfseries,title={Proposition #2},#1}
+
+\newtcolorbox{um6p-cor}[2][]{colback=um6p-light!40!white, colframe=um6p-color-dark-green!75!yellow,
+  arc=0pt,outer arc=0pt, % sharp corners
+  fonttitle=\bfseries,title={Corollary #2},#1}
+
+\newtcolorbox{um6p-ex}[2][]{colback=um6p-light!40!white,colframe=um6p-color-dark-red!75!red,
+  arc=0pt,outer arc=0pt, % sharp corners
+  fonttitle=\bfseries,title={Example #2},#1}
+
+\newtcolorbox{um6p-rmk}[2][]{colback=um6p-light!40!white,colframe=um6p-dark!50!red,
+  arc=0pt,outer arc=0pt, % sharp corners
+  fonttitle=\bfseries,title={Remark #2},#1}
+
+\newtcolorbox{um6pboxgreen}[2][]{colback=um6p-color-dark-green!50!white, colframe=um6p-color-dark-green!75!black,
+  arc=0pt,outer arc=0pt, % sharp corners
+  fonttitle=\bfseries,title={#2},#1}
+
+
+% \newcommand{\ProjectRepo}{https://github.com/abdtnourji/quard_um6p_intership}
+% \newcommand{\cmd}[1]{\texttt{#1}}
+
+\usepackage{tabularx} 
+\usepackage{array} 
+\usepackage{booktabs} 
+\usepackage{listings}
+\usepackage{tikz} 
+\usetikzlibrary{ positioning, arrows.meta, shapes.geometric, calc, fit, backgrounds }
+% Flexible left-aligned column for tabularx. 
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,calc,fit,backgrounds}
+
+\usepackage{tikz}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{array}

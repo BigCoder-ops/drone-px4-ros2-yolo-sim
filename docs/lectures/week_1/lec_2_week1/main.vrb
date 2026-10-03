@@ -1,0 +1,30 @@
+\frametitle{Complete End-to-End OOP Example III}
+\framesubtitle{ROS~2 integration: framework class plus project objects}
+
+\scriptsize
+\begin{verbatim}
+class DroneMonitorNode(Node):
+    def __init__(self):
+        super().__init__("drone_monitor")
+        self.monitor = DroneMonitor("uav_1", 25.0)
+        self.subscription = self.create_subscription(
+            VehicleOdometry,
+            "/fmu/out/vehicle_odometry",
+            self.odometry_callback,
+            10,
+        )
+
+    def odometry_callback(self, msg):
+        try:
+            self.monitor.state.update_position(*msg.position)
+        except (TypeError, ValueError) as exc:
+            self.get_logger().error(
+                f"Rejected odometry: {exc}"
+            )
+            return
+
+        self.get_logger().info(
+            f"altitude={self.monitor.state.altitude_m:.2f} m, "
+            f"status={self.monitor.status()}"
+        )
+\end{verbatim}

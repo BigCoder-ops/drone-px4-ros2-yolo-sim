@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>px4_orbit_inspection</name>
+  <version>1.0.0</version>
+  <description>Beginner-friendly PX4 ROS 2 orbit inspection mission with live path visualization.</description>
+  <maintainer email="abdellah.tnourji@um6p.ma">Abdellah TNOURJI</maintainer>
+  <license>Apache-2.0</license>
+  <buildtool_depend>ament_python</buildtool_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>px4_msgs</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <test_depend>ament_pytest</test_depend>
+  <export><build_type>ament_python</build_type></export>
+</package>

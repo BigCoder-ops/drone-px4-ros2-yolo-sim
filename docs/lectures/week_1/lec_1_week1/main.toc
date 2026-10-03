@@ -1,0 +1,4 @@
+\beamer@sectionintoc {1}{Mission and Foundations}{3}{0}{1}
+\beamer@sectionintoc {2}{Understanding Ubuntu and the Linux Environment}{22}{0}{2}
+\beamer@sectionintoc {3}{The Terminal and Essential Bash Foundations}{54}{0}{3}
+\beamer@sectionintoc {4}{Git and GitHub Foundations}{98}{0}{4}

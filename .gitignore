@@ -1,0 +1,30 @@
+# ---- recreated by scripts/setup_all.sh (never commit) ----
+dependencies/
+.setup_state/
+logs/
+
+# ROS 2 / colcon build output
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.pyc
+px4-venv/
+venv/
+.venv/
+
+# Recorded data
+data/bags/
+*.db3
+*.mcap
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store

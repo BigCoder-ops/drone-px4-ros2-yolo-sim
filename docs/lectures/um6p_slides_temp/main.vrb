@@ -1,0 +1,28 @@
+\frametitle{Algorithm}
+\begin{algorithm}[H]
+\fontsize{6}{1}\selectfont
+\caption{Bellman-Kalaba (adapted from \hrefcol{https://www.ctan.org/tex-archive/macros/latex/contrib/algorithmicx/algorithmicx.pdf}{algorithmicx documentation}).}
+\begin{algorithmic}
+\REQUIRE $G$, $u$, $l$, $p$
+% \ENSURE optional output
+\FORALL {$v \in V(G)$}
+    \STATE $l(v) \leftarrow \infty$
+\ENDFOR
+\STATE $l(u) \leftarrow 0$
+\REPEAT
+    \FOR {$i \leftarrow 1, n$}
+        \STATE $min \leftarrow l(v_i)$
+        \FOR {$j \leftarrow 1, n$}
+            \IF {$min > \CALL{Edge}{v_i, v_j} + l(v_j)$}
+                \STATE $min \leftarrow \CALL{Edge}{v_i, v_j} + l(v_j)$ \ANNOTATE{Example comment}
+                \STATE $p(i) \leftarrow v_j$
+            \ENDIF
+        \ENDFOR
+        \STATE $l’(i) \leftarrow min$
+    \ENDFOR
+    \STATE $changed \leftarrow l \not= l’$
+    \STATE $l \leftarrow l’$
+\UNTIL{$\neg changed$}
+% \RETURN optional return
+\end{algorithmic}
+\end{algorithm}

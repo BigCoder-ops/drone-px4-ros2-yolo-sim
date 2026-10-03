@@ -1,0 +1,32 @@
+# =============================================================================
+# Project   : Quadcopter Autonomous Inspection (UM6P Internship)
+# File      : orbit.yaml
+# Author    : Dr. Abdellah TNOURJI
+# Website   : https://www.abdellahtnourji.com/
+# Date      : [Date, 20, Aug 2026]
+
+# Description:
+#     This file contains the configuration parameters for the orbit controller used in the Quadcopter Autonomous Inspection project. 
+#     The parameters define the behavior of the orbiting maneuver, including the center coordinates, altitude, 
+#     radius, orbit period, number of laps, climb time, approach time, final hold duration, setpoint rate, and other relevant settings.
+# License   : UM6P
+# =============================================================================
+
+
+orbit_controller:
+  ros__parameters:
+    center_north_m: 0.0
+    center_east_m: 0.0
+    altitude_m: 4.0
+    radius_m: 5.0
+    orbit_period_s: 24.0
+    number_of_laps: 1.25
+    climb_time_s: 6.0
+    approach_time_s: 5.0
+    final_hold_s: 3.0
+    setpoint_rate_hz: 20.0
+    face_center: true
+    auto_start: false
+    auto_land: true
+    max_radius_m: 12.0
+    max_altitude_m: 10.0
