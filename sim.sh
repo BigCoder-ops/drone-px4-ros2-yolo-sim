@@ -1,0 +1,254 @@
+#!/usr/bin/env bash
+# =============================================================================
+#  sim.sh - start the whole PX4 + Gazebo + ROS 2 orbit-inspection simulation
+#           with ONE command (quard_um6p_intership).
+#
+#  Put this file in the root of the repo (~/quard_um6p_intership/sim.sh), then:
+#     chmod +x sim.sh
+#
+#  ./sim.sh                        default world + inspection objects + camera + orbit nodes
+#  ./sim.sh --world phoenix_mine   use the PHOENIX mine world instead of the empty one
+#  ./sim.sh --sar                  PHOENIX search & rescue mission in the mine (instead of orbit)
+#  ./sim.sh --yolo                 also start YOLO detection
+#  ./sim.sh --view                 also open rqt_image_view on the camera
+#  ./sim.sh --teleop               also open the keyboard-control window
+#  ./sim.sh --record               also record a rosbag in data/bags/
+#  ./sim.sh --auto-start           start the mission (orbit or SAR) automatically when ready
+#  ./sim.sh --all                  yolo + view + teleop + record
+#  ./sim.sh --headless             no Gazebo window (faster)
+#  ./sim.sh --no-objects           do not spawn the car / pickup / person
+#  ./sim.sh stop                   stop everything
+#  ./sim.sh attach                 re-open the windows if you closed the terminal
+#
+#  Inside the session:  click the tabs at the bottom (or Ctrl+b then a number),
+#  Ctrl+b d = hide the session (keeps running), ./sim.sh stop = end everything.
+# =============================================================================
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SESSION="phoenix_sim"
+VENV="${PX4_VENV:-$HOME/px4-venv}"
+RC_FILE="/tmp/${SESSION}_rc.sh"
+
+WORLD="default"; OBJECTS=1; YOLO=0; VIEW=0; TELEOP=0; RECORD=0
+AUTOSTART=0; HEADLESS=0; ATTACH=1; SAR=0
+
+say()  { printf '\033[1;36m[sim]\033[0m %s\n' "$*"; }
+warn() { printf '\033[1;33m[sim]\033[0m %s\n' "$*"; }
+die()  { printf '\033[1;31m[sim]\033[0m %s\n' "$*"; exit 1; }
+
+usage() { sed -n '2,27p' "${BASH_SOURCE[0]}" | sed 's/^#  \{0,1\}//'; exit 0; }
+
+stop_all() {
+  say "Stopping the simulation..."
+  pkill -f "orbit_controller|mission_monitor|mine_sar_mission|uav_camera_det|keyboard_mavsdk_control" 2>/dev/null
+  pkill -f "rqt_image_view|ros_gz_image|ros2 bag record" 2>/dev/null
+  pkill -f "px4_sitl_default/bin/px4" 2>/dev/null
+  pkill -f "gz sim" 2>/dev/null
+  pkill -f "MicroXRCEAgent" 2>/dev/null
+  sleep 1
+  say "Everything stopped."
+  tmux kill-session -t "$SESSION" 2>/dev/null
+}
+
+attach_session() {
+  if [ -n "$TMUX" ]; then tmux switch-client -t "$SESSION"; else tmux attach -t "$SESSION"; fi
+}
+
+# ---------------------------------------------------------------- arguments
+while [ $# -gt 0 ]; do
+  case "$1" in
+    stop)          stop_all; exit 0 ;;
+    attach)        attach_session; exit $? ;;
+    -h|--help)     usage ;;
+    --world)       WORLD="$2"; shift ;;
+    --sar)         SAR=1 ;;
+    --yolo)        YOLO=1 ;;
+    --view)        VIEW=1 ;;
+    --teleop)      TELEOP=1 ;;
+    --record)      RECORD=1 ;;
+    --auto-start)  AUTOSTART=1 ;;
+    --all)         YOLO=1; VIEW=1; TELEOP=1; RECORD=1 ;;
+    --headless)    HEADLESS=1 ;;
+    --no-objects)  OBJECTS=0 ;;
+    --no-attach)   ATTACH=0 ;;
+    *) die "Unknown option '$1' (use --help)" ;;
+  esac
+  shift
+done
+
+if [ "$SAR" = 1 ] && [ "$WORLD" = "default" ]; then
+  WORLD="phoenix_mine"; say "SAR mission selected -> using the phoenix_mine world"
+fi
+MISSION="orbit"; [ "$SAR" = 1 ] && MISSION="sar"
+
+if [ -n "$TMUX" ] && [ "$(tmux display-message -p '#S' 2>/dev/null)" = "$SESSION" ]; then
+  die "You are inside the simulation tabs. Press Ctrl+b then d, then run this again."
+fi
+
+# ---------------------------------------------------------------- environment
+command -v tmux >/dev/null || die "tmux is missing. Install it once with:  sudo apt install tmux"
+[ -f "$REPO/config/project.env" ] || die "config/project.env not found - put sim.sh in the repo root"
+
+cd "$REPO" || exit 1
+# shellcheck disable=SC1091
+source config/project.env
+[ -n "$PX4_DIR" ] && [ -x "$PX4_DIR/build/px4_sitl_default/bin/px4" ] || die "PX4 build not found in PX4_DIR='$PX4_DIR'"
+# shellcheck disable=SC1091
+source /opt/ros/humble/setup.bash
+# shellcheck disable=SC1091
+[ -f "$VENV/bin/activate" ] && source "$VENV/bin/activate"
+# shellcheck disable=SC1091
+[ -f "$ROS2_WS/install/setup.bash" ] && source "$ROS2_WS/install/setup.bash"
+
+# command prefixes typed into each window (same as the manual terminals)
+BASE_ENV="cd '$REPO' && source config/project.env"
+ROS_ENV="$BASE_ENV && source /opt/ros/humble/setup.bash && { [ -f '$VENV/bin/activate' ] && source '$VENV/bin/activate'; true; } && source \"\$ROS2_WS/install/setup.bash\" && { [ -f '$RC_FILE' ] && source '$RC_FILE'; true; }"
+
+# custom world: copy it into PX4 if it lives in the repo
+if [ "$WORLD" != "default" ]; then
+  PX4_WORLDS="$PX4_DIR/Tools/simulation/gz/worlds"
+  for src in "$REPO/gazebo/worlds/$WORLD.sdf" "$REPO/$WORLD.sdf"; do
+    [ -f "$src" ] && cp -u "$src" "$PX4_WORLDS/" && say "World file $WORLD.sdf copied to PX4"
+  done
+  [ -f "$PX4_WORLDS/$WORLD.sdf" ] || die "World '$WORLD' not found. Put $WORLD.sdf in $REPO/gazebo/worlds/"
+fi
+
+WORLD_FILE="$PX4_DIR/Tools/simulation/gz/worlds/$WORLD.sdf"
+[ -f "$WORLD_FILE" ] || die "World file not found: $WORLD_FILE"
+GZ_PATHS="$PX4_DIR/Tools/simulation/gz/models:$PX4_DIR/Tools/simulation/gz/worlds:$REPO/gazebo/models"
+export GZ_SIM_RESOURCE_PATH="${GZ_SIM_RESOURCE_PATH:+$GZ_SIM_RESOURCE_PATH:}$GZ_PATHS"
+
+# ---------------------------------------------------------------- checks used while waiting
+gz_world_up()  { gz service -l 2>/dev/null | grep -q "^/world/${WORLD}/create$"; }
+drone_up()     { gz topic -l 2>/dev/null | grep -q "^/world/${WORLD}/model/x500_depth_0/"; }
+px4_ros_up()   { timeout 12 ros2 topic list --no-daemon --spin-time 3 2>/dev/null | grep -q "^/fmu/out/vehicle_odometry$"; }
+camera_up()    { timeout 12 ros2 topic list --no-daemon --spin-time 3 2>/dev/null | grep -q "^/camera/image_raw$"; }
+orbit_up()     { timeout 12 ros2 service list --no-daemon --spin-time 3 2>/dev/null | grep -q "^/orbit/start$"; }
+sar_up()       { timeout 12 ros2 service list --no-daemon --spin-time 3 2>/dev/null | grep -q "^/sar/start$"; }
+
+wait_for() {   # wait_for <seconds> <label> <check-function>
+  local t=$1 label=$2 check=$3 i
+  printf '\033[1;36m[sim]\033[0m Waiting for %s ' "$label"
+  for ((i = 0; i < t; i += 2)); do
+    if "$check"; then printf ' \033[1;32mOK\033[0m\n'; return 0; fi
+    printf '.'; sleep 2
+  done
+  printf ' \033[1;33mnot ready after %ss - check its tab\033[0m\n' "$t"
+  return 1
+}
+
+new_tab() {    # new_tab <name> <environment> <command>  - runs in its own tab
+  tmux new-window -t "$SESSION" -n "$1"
+  tmux send-keys -t "$SESSION:$1" "$2 && clear && echo '=== $1 :: $3' && $3" C-m
+}
+
+spawn() {      # spawn <entity name> <model folder> <x> <y>
+  local sdf="$REPO/gazebo/models/$2/model.sdf"
+  [ -f "$sdf" ] || { warn "  $2/model.sdf not found - skipped"; return; }
+  if gz service -s "/world/${WORLD}/create" --reqtype gz.msgs.EntityFactory \
+       --reptype gz.msgs.Boolean --timeout 5000 \
+       --req "name: '$1', sdf_filename: '$sdf', pose: {position: {x: $3, y: $4, z: 0.0}, orientation: {w: 1.0}}" \
+       2>/dev/null | grep -q "data: true"; then
+    say "  spawned $1 at ($3, $4)"
+  else
+    warn "  could not spawn $1 (maybe it already exists)"
+  fi
+}
+
+# ---------------------------------------------------------------- start
+if tmux has-session -t "$SESSION" 2>/dev/null || pgrep -f "px4_sitl_default/bin/px4|gz sim" >/dev/null; then
+  warn "An old simulation is still running - stopping it first."
+  stop_all
+fi
+say "Restarting ROS 2 daemon (max 10 s)..."; timeout 5 ros2 daemon stop >/dev/null 2>&1; (timeout 10 ros2 daemon start >/dev/null 2>&1 &)
+
+cat > "$RC_FILE" <<EOF
+orbit_start() { ros2 service call /orbit/start std_srvs/srv/Trigger "{}"; }
+orbit_abort() { ros2 service call /orbit/abort std_srvs/srv/Trigger "{}"; }
+sar_start()   { ros2 service call /sar/start std_srvs/srv/Trigger "{}"; }
+sar_abort()   { ros2 service call /sar/abort std_srvs/srv/Trigger "{}"; }
+sar_land()    { ros2 service call /sar/land  std_srvs/srv/Trigger "{}"; }
+sar_status()  { ros2 topic echo /sar/status; }
+graph()       { ros2 run rqt_graph rqt_graph; }
+sim_help() {
+  echo ""
+  echo "  orbit_start   start the orbit mission       orbit_abort   abort + land"
+  echo "  sar_start     start the mine SAR mission    sar_abort     return home   sar_land  land here"
+  echo "  sar_status    follow the SAR mission live"
+  echo "  graph         open rqt_graph                 ./sim.sh stop stop everything"
+  echo "  Tabs: click them at the bottom, or Ctrl+b then the tab number."
+  echo "  Ctrl+b d hides the session (it keeps running). ./sim.sh attach brings it back."
+  echo ""
+}
+EOF
+
+say "Starting simulation  (world: $WORLD)"
+tmux new-session -d -s "$SESSION" -n control -x 220 -y 50
+tmux set -t "$SESSION" mouse on >/dev/null
+tmux set -t "$SESSION" remain-on-exit off >/dev/null
+tmux set -t "$SESSION" status-style "bg=colour24,fg=white" >/dev/null
+
+# 1. Micro XRCE-DDS agent
+new_tab agent "$BASE_ENV" "cd \"\$DDS_AGENT_DIR\" && MicroXRCEAgent udp4 -p 8888"
+
+# 2. Gazebo first (we start it ourselves, so a slow world load cannot make PX4 give up)
+new_tab gazebo "$BASE_ENV" "export GZ_SIM_RESOURCE_PATH='$GZ_SIM_RESOURCE_PATH' && gz sim -r -s --verbose=1 '$WORLD_FILE'"
+wait_for 180 "Gazebo world '$WORLD'" gz_world_up
+if [ "$HEADLESS" != 1 ]; then
+  (nohup gz sim -g >/tmp/${SESSION}_gz_gui.log 2>&1 &)
+  say "Gazebo window opening"
+fi
+
+# 3. drone: spawned by us with a long timeout, then PX4 attaches to it
+say "Spawning the drone (first time can take ~30 s while Gazebo prepares the cameras)"
+gz service -s "/world/${WORLD}/create" --reqtype gz.msgs.EntityFactory --reptype gz.msgs.Boolean \
+  --timeout 90000 --req "name: 'x500_depth_0', sdf_filename: '$PX4_DIR/Tools/simulation/gz/models/x500_depth/model.sdf', pose: {position: {x: 0.0, y: 0.0, z: 0.3}, orientation: {w: 1.0}}, allow_renaming: false" \
+  >/dev/null 2>&1
+wait_for 120 "drone x500_depth_0 in Gazebo" drone_up
+new_tab px4 "$BASE_ENV" "cd \"\$PX4_DIR\" && PX4_GZ_STANDALONE=1 PX4_GZ_WORLD=$WORLD PX4_GZ_MODEL_NAME=x500_depth_0 PX4_SYS_AUTOSTART=4002 ./build/px4_sitl_default/bin/px4"
+
+# 4. inspection objects
+if [ "$OBJECTS" = 1 ]; then
+  say "Spawning inspection objects"
+  spawn inspection_car_instance inspection_hatchback 8.0 0.0
+  spawn inspection_pickup       inspection_pickup   -5.0 2.5
+  spawn inspection_person       inspection_person    0.0 6.0
+fi
+
+# 5. camera bridge
+new_tab camera "$ROS_ENV" "ros2 run ros_gz_image image_bridge /camera --ros-args -r /camera:=/camera/image_raw -p qos:=sensor_data"
+wait_for 60 "PX4 <-> ROS 2 link (/fmu/out)" px4_ros_up
+wait_for 40 "camera topic /camera/image_raw" camera_up
+
+# 6. mission nodes
+if [ "$SAR" = 1 ]; then
+  [ -f "$REPO/missions/mine_sar_mission.py" ] || die "missions/mine_sar_mission.py not found - run the SAR install.sh"
+  new_tab sar     "$ROS_ENV" "python3 -u missions/mine_sar_mission.py"
+  new_tab monitor "$ROS_ENV" "ros2 run px4_orbit_inspection mission_monitor"
+  wait_for 60 "SAR mission node (/sar/start)" sar_up
+else
+  new_tab orbit "$ROS_ENV" "ros2 launch px4_orbit_inspection orbit_demo.launch.py"
+  wait_for 60 "orbit_controller (/orbit/start)" orbit_up
+fi
+
+# 7. optional tabs
+[ "$VIEW" = 1 ]   && new_tab view   "$ROS_ENV" "ros2 run rqt_image_view rqt_image_view /camera/image_raw"
+[ "$YOLO" = 1 ]   && new_tab yolo   "$ROS_ENV" "cd perception/yolo && python -u uav_camera_det.py"
+[ "$TELEOP" = 1 ] && new_tab teleop "$ROS_ENV" "cd tools/mavsdk_teleop && python -u keyboard_mavsdk_control.py"
+[ "$RECORD" = 1 ] && new_tab record "$ROS_ENV" "mkdir -p data/bags && ros2 bag record -o data/bags/run_\$(date +%Y%m%d_%H%M%S) /camera/image_raw /inspection/debug_image /inspection/detections /fmu/out/vehicle_odometry /fmu/out/vehicle_status /fmu/in/trajectory_setpoint"
+
+# 8. control tab (your free terminal, with shortcuts) - recreated if it was closed
+tmux list-windows -t "$SESSION" -F '#W' | grep -qx control || tmux new-window -t "$SESSION" -n control
+tmux send-keys -t "$SESSION:control" "$ROS_ENV && source '$RC_FILE' && clear && sim_help" C-m
+
+if [ "$AUTOSTART" = 1 ]; then
+  say "Giving PX4 15 s to get GPS / EKF ready, then starting the $MISSION mission..."
+  sleep 15
+  tmux send-keys -t "$SESSION:control" "${MISSION}_start" C-m
+fi
+
+tmux select-window -t "$SESSION:control"
+say "All started. Tabs: control | agent | gazebo | px4 | camera | $([ $SAR = 1 ] && echo 'sar | monitor' || echo orbit)$([ $VIEW = 1 ] && echo ' | view')$([ $YOLO = 1 ] && echo ' | yolo')$([ $TELEOP = 1 ] && echo ' | teleop')$([ $RECORD = 1 ] && echo ' | record')"
+[ "$AUTOSTART" = 1 ] || say "Type  ${MISSION}_start  in the control tab to fly the mission."
+[ "$ATTACH" = 1 ] && attach_session
+exit 0
